@@ -30,6 +30,90 @@ class ThreadRepositoryPostgres extends ThreadRepository {
 
     return new CreatedThread({ ...result.rows[0] });
   }
+
+  async getThreadById(threadId) {
+    const query = {
+      text: `
+        SELECT
+          t.id AS thread_id,
+          t.title AS thread_title,
+          t.body AS thread_body,
+          t.created_at AS thread_date,
+          ut.username AS thread_username,
+          tc.id AS comment_id,
+          utc.username AS comment_username,
+          tc.created_at AS comment_date,
+          tc.content AS comment_content,
+          tcr.id AS reply_id,
+          tcr.content AS reply_content,
+          tcr.created_at AS reply_date,
+          utcr.username AS reply_username
+        FROM threads AS t
+        JOIN users AS ut ON ut.id=t.user_id
+        LEFT JOIN thread_comments AS tc ON tc.thread_id=t.id
+        LEFT JOIN users AS utc ON utc.id=tc.user_id 
+        LEFT JOIN thread_comment_replies AS tcr ON tcr.thread_comment_id=tc.id
+        LEFT JOIN users as utcr ON utcr.id=tcr.user_id
+        WHERE t.id = $1
+        ORDER BY
+          tc.created_at DESC,
+          tcr.created_at DESC 
+      `,
+      values: [threadId]
+    };
+
+    const queryResult = await this._pool.query(query);
+
+    if (queryResult.rows.length === 0) {
+      return null;
+    } else {
+      const mappedThreadDetail = this._mapThreadCommentAndReviews(queryResult)
+      return mappedThreadDetail;
+    }
+  }
+
+  _mapThreadCommentAndReviews(threadResult) {
+    const threadDetail = {
+      id: threadResult.rows[0].thread_id,
+      title: threadResult.rows[0].thread_title,
+      body: threadResult.rows[0].thread_body,
+      date: threadResult.rows[0].thread_date,
+      username: threadResult.rows[0].thread_username,
+      comments: []
+    };
+
+    const commentMap = new Map();
+
+    threadResult.rows.forEach(row => {
+      // Jika komentar belum ada dalam commentMap, tambahkan
+      if (!commentMap.has(row.comment_id)) {
+        const comment = {
+          id: row.comment_id,
+          username: row.comment_username,
+          date: row.comment_date,
+          content: row.comment_content,
+          replies: []
+        };
+        commentMap.set(row.comment_id, comment);
+        threadDetail.comments.push(comment);
+      }
+
+      // Ambil komentar dari commentMap dan tambahkan reply ke dalamnya
+      const comment = commentMap.get(row.comment_id);
+
+      // Tambahkan reply jika ada
+      if (row.reply_id) {
+        comment.replies.push({
+          id: row.reply_id,
+          content: row.reply_content,
+          date: row.reply_date,
+          username: row.reply_username
+        });
+      }
+    });
+
+    return threadDetail;
+  }
 }
 
 module.exports = ThreadRepositoryPostgres;

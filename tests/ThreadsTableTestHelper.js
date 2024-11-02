@@ -6,15 +6,21 @@ const ThreadsTableTestHelper = {
     id = 'thread-id-123', 
     userId,
     title = 'Title Test',
-    body = 'Body test',
-    createdAt = new Date()
+    body = 'Body test'
   }) {
     const query = {
-      text: 'INSERT INTO threads (id, created_at, title, body, user_id) VALUES($1, $2, $3, $4, $5)',
-      values: [id, createdAt, title, body, userId],
+      text: `
+        INSERT INTO threads (id, title, body, user_id)
+        VALUES($1, $2, $3, $4)
+        RETURNING id
+      `,
+      values: [id, title, body, userId],
     };
 
-    await pool.query(query);
+    const result = await pool.query(query);
+
+    
+    return result.rows[0].id;
   },
 
   async cleanTable() {
