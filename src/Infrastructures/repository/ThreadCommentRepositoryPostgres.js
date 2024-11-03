@@ -38,6 +38,8 @@ class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
   }
 
   async deleteCommentById(commentId) {
+    await this.checkIsCommentExistById()
+
     const query = {
       text: 'DELETE FROM thread_comments WHERE id = $1 RETURNING id',
       values: [commentId]
@@ -50,6 +52,24 @@ class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
     } else {
       return result.rows[0].id;
     }
+  }
+
+  async checkIsCommentExistById(commentId) {
+    const query = {
+      text: 'SELECT id FROM thread_comments WHERE id = $1',
+      values: [commentId],
+    }
+    const result = await this._pool.query(query);
+
+    return result.rows.length > 0 ? true : false;
+  }
+
+  async verifyCommentExistenceById(commentId) {
+    const isCommentExist = await this.checkIsCommentExistById(commentId);
+    if (!isCommentExist) {
+      throw new NotFoundError('Comment tidak ditemukan.');
+    }
+    return true;
   }
 }
 
