@@ -18,7 +18,7 @@ describe('ThreadCommentRepositoryPostgres', () => {
 
   describe('addComment', () => {
     it('should throw not found error if thread does not exist', async () => {
-      const userId = await UsersTableTestHelper.addUser({ username: 'hidayah' });
+      const userId = await UsersTableTestHelper.addUser({ userId: "user-addComment", username: 'hidayah' });
       const threadId = 'not-found';
 
       const fakeIdGenerator = () => '123-aBcD';

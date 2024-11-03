@@ -49,10 +49,12 @@ class ThreadRepositoryPostgres extends ThreadRepository {
           tc.id AS comment_id,
           utc.username AS comment_username,
           tc.created_at AS comment_date,
+          tc.is_delete AS comment_is_delete,
           tc.content AS comment_content,
           tcr.id AS reply_id,
           tcr.content AS reply_content,
           tcr.created_at AS reply_date,
+          tcr.is_delete AS reply_is_delete,
           utcr.username AS reply_username
         FROM threads AS t
         JOIN users AS ut ON ut.id=t.user_id
@@ -92,7 +94,7 @@ class ThreadRepositoryPostgres extends ThreadRepository {
           id: row.comment_id,
           username: row.comment_username,
           date: row.comment_date,
-          content: row.comment_content,
+          content: this._changeDeletedCommentContent(row.comment_is_delete, row.comment_content),
           replies: []
         };
         commentMap.set(row.comment_id, comment);
@@ -106,7 +108,7 @@ class ThreadRepositoryPostgres extends ThreadRepository {
       if (row.reply_id) {
         comment.replies.push({
           id: row.reply_id,
-          content: row.reply_content,
+          content: this._changeDeletedReplyContent(row.reply_is_delete, row.reply_content),
           date: row.reply_date,
           username: row.reply_username
         });
@@ -123,6 +125,14 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     }
     const result = await this._pool.query(query);
     return result.rows.length > 0 ? true : false;
+  }
+
+  _changeDeletedCommentContent(isDelete, content) {
+    return isDelete ? "**komentar telah dihapus**" : content;
+  }
+
+  _changeDeletedReplyContent(isDelete, content) {
+    return isDelete ? "**balasan telah dihapus**" : content;
   }
 }
 

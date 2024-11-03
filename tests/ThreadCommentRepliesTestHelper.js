@@ -38,7 +38,19 @@ const ThreadCommentRepliesTableTestHelper = {
     const result = await pool.query(query);
 
     return result.rows.length > 0 ? result.rows[0] : null;
-  }
+  },
+
+  async softDeleteById(commentId) {
+    const query = {
+      text: `
+        UPDATE thread_comment_replies
+        SET is_delete = true, deleted_at = $1
+        WHERE id = $2
+      `,
+      values: [new Date(), commentId],
+    };
+    await pool.query(query);
+  },
 }
 
 module.exports = ThreadCommentRepliesTableTestHelper;

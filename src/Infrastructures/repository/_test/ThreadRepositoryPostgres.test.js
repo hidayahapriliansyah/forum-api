@@ -69,26 +69,33 @@ describe('ThreadRepositoryPostgres', () => {
         userId: userIdB,
         threadId,
       });
-      await ThreadCommentsTableTestHelper.addComment({
+      const threadCommentBId = await ThreadCommentsTableTestHelper.addComment({
         id: 'thread-comment-2',
         userId: userIdB,
         threadId,
       });
 
+      // create 2 reply on not deleted comment
       await ThreadCommentRepliesTableTestHelper.addReply({
         id: 'thread-comment-reply-1',
         userId: userIdC,
         threadCommentId: threadCommentAId,
       });
-      await ThreadCommentRepliesTableTestHelper.addReply({
+      const replyId1 = await ThreadCommentRepliesTableTestHelper.addReply({
         id: 'thread-comment-reply-2',
         userId: userIdC,
         threadCommentId: threadCommentAId,
       });
 
+      // soft delete a comment
+      await ThreadCommentsTableTestHelper.softDeleteById(threadCommentBId);
+      // soft delete a reply
+      await ThreadCommentRepliesTableTestHelper.softDeleteById(replyId1);
+
       const fakeIdGenerator = () => '123aBcDef';
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
 
+      // action
       const threadDetail = await threadRepositoryPostgres.findThreadById(threadId);
 
       expect(threadDetail.id).toBe(threadId);
@@ -102,11 +109,13 @@ describe('ThreadRepositoryPostgres', () => {
       expect(threadDetail.comments[0].date).toBeDefined();
       expect(threadDetail.comments[0].content).toBeDefined();
       expect(threadDetail.comments[0].replies.length).toBe(0);
+      expect(threadDetail.comments[0].content).toBe("**komentar telah dihapus**");
       expect(threadDetail.comments[1].replies.length).toBe(2);
       expect(threadDetail.comments[1].replies[0].id).toBe('thread-comment-reply-2');
       expect(threadDetail.comments[1].replies[0].username).toBeDefined();
       expect(threadDetail.comments[1].replies[0].date).toBeDefined();
       expect(threadDetail.comments[1].replies[0].content).toBeDefined();
+      expect(threadDetail.comments[1].replies[0].content).toBe("**balasan telah dihapus**");
     });
   });
 });
