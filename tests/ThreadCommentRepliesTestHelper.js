@@ -23,6 +23,21 @@ const ThreadCommentRepliesTableTestHelper = {
 
   async cleanTable() {
     await pool.query('DELETE FROM thread_comment_replies WHERE 1=1');
+  },
+
+  async findReplyByid(replyId) {
+    const query = {
+      text: `
+        SELECT id, created_at, content, is_delete, deleted_at
+        FROM thread_comment_replies
+        WHERE id = $1
+      `,
+      values: [replyId],
+    };
+
+    const result = await pool.query(query);
+
+    return result.rows.length > 0 ? result.rows[0] : null;
   }
 }
 

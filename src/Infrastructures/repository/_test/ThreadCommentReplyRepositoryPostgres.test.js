@@ -41,7 +41,6 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
       const threadId = await ThreadsTableTestHelper.addThread({ userId })
       const commentId = await ThreadCommentsTableTestHelper.addComment({ userId, threadId });
 
-
       const fakeIdGenerator = () => '123-aBcD';
       const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
       const threadCommentReplyRepositoryPostgres =
@@ -60,6 +59,41 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
     });
   });
 
-  // delete
-  // describe('deleteReply', () => {});
+  describe('softDeleteCommentReply', () => {
+    it('should throw error if reply is not exist', async () => {
+      const commentId = 'not-found-comment';
+
+      const fakeIdGenerator = () => '123-aBcD';
+      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
+      const threadCommentReplyRepositoryPostgres =
+        new ThreadCommentReplyRepositoryPostgres(pool, fakeIdGenerator, threadCommentRepositoryPostgres);
+
+      await expect(
+        threadCommentReplyRepositoryPostgres.softDeleteCommentReplyById(commentId)
+      ).rejects.toThrowError('Reply tidak ditemukan.');
+    });
+
+    it('should correctly soft delete reply', async () => { 
+      const userId = await UsersTableTestHelper.addUser({ id: 'user-test123', username: 'hidayah' });
+      const threadId = await ThreadsTableTestHelper.addThread({ userId })
+      const commentId = await ThreadCommentsTableTestHelper.addComment({ userId, threadId });
+      const replyId = await ThreadCommentRepliesTableTestHelper
+        .addReply({ userId, threadCommentId: commentId });
+
+
+      const fakeIdGenerator = () => '123-aBcD';
+      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
+      const threadCommentReplyRepositoryPostgres =
+        new ThreadCommentReplyRepositoryPostgres(pool, fakeIdGenerator, threadCommentRepositoryPostgres);
+
+      // action of tested repository
+      await threadCommentReplyRepositoryPostgres.softDeleteCommentReplyById(replyId);
+
+      // check
+      const deletedReply = await ThreadCommentRepliesTableTestHelper.findReplyByid(replyId);
+      expect(deletedReply.id).toBe(replyId);
+      expect(deletedReply.deleted_at).not.toBeNull();
+      expect(deletedReply.is_delete).toBe(true);
+    });
+  });
 });

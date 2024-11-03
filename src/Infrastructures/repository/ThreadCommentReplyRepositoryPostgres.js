@@ -1,3 +1,4 @@
+const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const ThreadCommentReplyRepository = require('../../Domains/thread-comment-replies/ThreadCommentReplyRepository');
 
 class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository {
@@ -28,6 +29,38 @@ class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository 
 
     const result = await this._pool.query(query);
     return result.rows[0];
+  }
+
+  async softDeleteCommentReplyById(replyId) {
+    await this.verifyReplyExistenceById(replyId);
+
+    const query = {
+      text: `
+        UPDATE thread_comment_replies
+        SET is_delete = true, deleted_at = $2
+        WHERE id = $1
+      `,
+      values: [replyId, new Date()],
+    };
+
+    await this._pool.query(query);
+  }
+
+  async checkIsReplyExist(replyId) {
+    const query = {
+      text: 'SELECT id FROM thread_comment_replies WHERE id = $1',
+      values: [replyId],
+    };
+    const result = await this._pool.query(query);
+    return result.rows.length > 0 ? true : false;
+  }
+
+  async verifyReplyExistenceById(replyId) {
+    const isReplyExist = await this.checkIsReplyExist(replyId);
+    if (!isReplyExist) {
+      throw new NotFoundError('Reply tidak ditemukan.');
+    }
+    return true;
   }
 }
 
