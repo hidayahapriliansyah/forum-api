@@ -59,8 +59,8 @@ describe('ThreadCommentRepositoryPostgres', () => {
     });
   });
 
-  describe('deleteComment', () => {
-    it('should delete comment from thread correctly', async () => {
+  describe('softDeleteCommentById', () => {
+    it('should soft delete comment from thread correctly', async () => {
       const userId = await UsersTableTestHelper.addUser({ username: 'hidayah' });
       const threadId = await ThreadsTableTestHelper.addThread({ userId });
 
@@ -77,12 +77,14 @@ describe('ThreadCommentRepositoryPostgres', () => {
       const threadCommentRepositoryPostgres =
         new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator, threadRepositoryPostgres);
 
-      const deletedCommentId = await threadCommentRepositoryPostgres.deleteCommentById(threadCommentId);
+      // action of comment soft delete repository
+      await threadCommentRepositoryPostgres.softDeleteCommentById(threadCommentId);
 
-      const threadComment = await ThreadCommentsTableTestHelper.findCommentById(threadCommentId);
+      const deletedComment = await ThreadCommentsTableTestHelper.findCommentById(threadCommentId);
 
-      expect(deletedCommentId).toBe(threadCommentId)
-      expect(threadComment).toBeUndefined();
+      expect(deletedComment.id).toBe(threadCommentId)
+      expect(deletedComment.deleted_at).not.toBeNull();
+      expect(deletedComment.is_delete).toBe(true);
     });
   });
 
@@ -97,7 +99,7 @@ describe('ThreadCommentRepositoryPostgres', () => {
         new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator, threadRepositoryPostgres);
 
       await expect(
-        threadCommentRepositoryPostgres.deleteCommentById(threadCommentId)
+        threadCommentRepositoryPostgres.softDeleteCommentById(threadCommentId)
       ).rejects.toThrowError('Comment tidak ditemukan.');
   });
 });

@@ -3,7 +3,7 @@ class ThreadCommentRepository {
     throw new Error('THREAD_COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   }
 
-  async deleteCommentById(threadCommentId) {
+  async softDeleteCommentById(threadCommentId) {
     throw new Error('THREAD_COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   }
 }

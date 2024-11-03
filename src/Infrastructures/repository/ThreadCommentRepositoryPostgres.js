@@ -37,21 +37,20 @@ class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
     return new CreatedThreadComment({ ...result.rows[0] });
   }
 
-  async deleteCommentById(commentId) {
-    await this.checkIsCommentExistById()
+  async softDeleteCommentById(commentId) {
+    await this.verifyCommentExistenceById(commentId);
 
+    const now = new Date();
     const query = {
-      text: 'DELETE FROM thread_comments WHERE id = $1 RETURNING id',
-      values: [commentId]
+      text: `
+        UPDATE thread_comments
+        SET is_delete = true, deleted_at = $2
+        WHERE id = $1
+      `,
+      values: [commentId, now]
     };
 
-    const result = await this._pool.query(query);
-
-    if (result.rows.length === 0) {
-      throw new NotFoundError('Comment tidak ditemukan.');
-    } else {
-      return result.rows[0].id;
-    }
+    await this._pool.query(query);
   }
 
   async checkIsCommentExistById(commentId) {

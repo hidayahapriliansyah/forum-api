@@ -6,7 +6,7 @@ describe('ThreadCommentRepository', () => {
 
     await expect(threadCommentRepository.addComment({}))
       .rejects.toThrowError('THREAD_COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
-    await expect(threadCommentRepository.deleteCommentById({}))
+    await expect(threadCommentRepository.softDeleteCommentById({}))
       .rejects.toThrowError('THREAD_COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   });
 });
