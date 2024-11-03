@@ -37,7 +37,7 @@ describe('ThreadRepositoryPostgres', () => {
     });
   });
 
-  describe('getThreadById', () => {
+  describe('findThreadById', () => {
     // create thread first cuy
     it('should return null if thread is not found', async () => {
       const threadId = 'thread-nout-found';
@@ -45,9 +45,9 @@ describe('ThreadRepositoryPostgres', () => {
       const fakeIdGenerator = () => '123aBcDef';
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
 
-      const thread = await threadRepositoryPostgres.getThreadById(threadId)
-
-      expect(thread).toBe(null);
+      await expect(threadRepositoryPostgres.findThreadById(threadId))
+        .rejects
+        .toThrowError('Thread tidak ditemukan.');
     });
 
     it('should return thread correctly', async () => {
@@ -89,7 +89,7 @@ describe('ThreadRepositoryPostgres', () => {
       const fakeIdGenerator = () => '123aBcDef';
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
 
-      const threadDetail = await threadRepositoryPostgres.getThreadById(threadId);
+      const threadDetail = await threadRepositoryPostgres.findThreadById(threadId);
 
       expect(threadDetail.id).toBe(threadId);
       expect(threadDetail.title).toBeDefined();

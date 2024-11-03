@@ -21,6 +21,16 @@ const ThreadCommentsTableTestHelper = {
     return result.rows[0].id;
   },
 
+  async findCommentById(commentId) {
+    const query = {
+      text: 'SELECT * FROM thread_comments WHERE id = $1',
+      values: [commentId],
+    };
+
+    const result = await pool.query(query);
+    return result.rows[0];
+  },
+
   async cleanTable() {
     await pool.query('DELETE FROM thread_comments WHERE 1=1');
   }
