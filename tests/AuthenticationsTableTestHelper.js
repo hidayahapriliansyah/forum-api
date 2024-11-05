@@ -21,9 +21,20 @@ const AuthenticationsTableTestHelper = {
 
     return result.rows;
   },
+
   async cleanTable() {
     await pool.query('DELETE FROM authentications WHERE 1=1');
   },
+
+  async checkIsTableEmpty() {
+    const query = {
+      text: 'SELECT token FROM authentications LIMIT 1',
+    };
+
+    const result = await pool.query(query);
+
+    return result.rows.length > 0 ? false : true;
+  }
 };
 
 module.exports = AuthenticationsTableTestHelper;
