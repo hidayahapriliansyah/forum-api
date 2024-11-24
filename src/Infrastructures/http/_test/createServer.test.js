@@ -1,3 +1,5 @@
+const jwtHelper = require('../../../../tests/JwtHelper');
+
 const createServer = require('../createServer');
 
 describe('HTTP server', () => {
@@ -29,6 +31,31 @@ describe('HTTP server', () => {
       method: 'POST',
       url: '/users',
       payload: requestPayload,
+    });
+
+    // Assert
+    const responseJson = JSON.parse(response.payload);
+    expect(response.statusCode).toEqual(500);
+    expect(responseJson.status).toEqual('error');
+    expect(responseJson.message).toEqual('terjadi kegagalan pada server kami');
+  });
+
+  it('should handle auth correctly', async () => {
+    const accessToken = await jwtHelper.createAccessToken({ id: 'fake_user_id' });
+
+    const requestPayload = {
+      title: 'title test',
+    };
+    const server = await createServer({}); // fake injection
+
+    // Action
+    const response = await server.inject({
+      method: 'POST',
+      url: '/threads',
+      payload: requestPayload,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     });
 
     // Assert
