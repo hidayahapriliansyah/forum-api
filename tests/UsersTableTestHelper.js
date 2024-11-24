@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 const pool = require('../src/Infrastructures/database/postgres/pool');
 const bcrypt = require('bcrypt');
+const { findOne } = require('./ThreadsTableTestHelper');
 
 const UsersTableTestHelper = {
   async addUser({
@@ -30,6 +31,15 @@ const UsersTableTestHelper = {
   async cleanTable() {
     await pool.query('DELETE FROM users WHERE 1=1');
   },
+
+  async findOne() {
+    const query = {
+      text: 'SELECT * FROM users LIMIT 1',
+    };
+
+    const result = await pool.query(query);
+    return result.rows[0];
+  }
 };
 
 module.exports = UsersTableTestHelper;

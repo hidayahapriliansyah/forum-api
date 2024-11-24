@@ -25,14 +25,87 @@ describe('threads e2e', () => {
     await closePool();
   });
 
-  describe('POST /threads', () => {
-    fit('should correctly create threads and return correct response', async () => {
-      const userId = await UsersTableTestHelper.addUser({ 
-        id: 'userId',
-        username: 'test_username',
-        password: 'testpw',
-      });
+  beforeEach(async () => {
+    await UsersTableTestHelper.addUser({ 
+      id: 'userId',
+      username: 'test_username',
+      password: 'testpw',
+    });
+  });
 
+  afterEach(async () => {
+    await ThreadsTableTestHelper.cleanTable();
+    await UsersTableTestHelper.cleanTable();
+  });
+
+  describe('POST /threads', () => {
+    // should error if not sending auth header property
+    it('should error if not sending auth header property', async () => {
+      const response = await supertest(server.listener)
+        .post('/threads')
+        .send({
+          title: 'title test',
+          body: 'body test',
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body.statusCode).toBe(401);
+      expect(response.body.error).toBe('Unauthorized');
+      expect(response.body.message).toBe('Missing authentication');
+    });
+
+    it('should error if not sending if wrong access token', async () => {
+      const accessToken = 'random access token';
+
+      const response = await supertest(server.listener)
+        .post('/threads')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          title: 'title test',
+          body: 'body test',
+        });
+
+      expect(response.body.statusCode).toBe(401);
+      expect(response.body.error).toBe('Unauthorized');
+      expect(response.body.message).toBe('Bad HTTP authentication header format');
+      expect(response.status).toBe(401);
+    });
+
+    it('should error if required propery body request is missing', async () => {
+      const { id: userId } = await UsersTableTestHelper.findOne();
+      const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
+
+      const response = await supertest(server.listener)
+        .post('/threads')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          title: 'title test',
+        });
+
+        expect(response.status).toBe(400);
+        expect(response.body.status).toBe('fail');
+        expect(response.body.message).toBe('tidak dapat membuat thread baru karena properti yang dibutuhkan tidak ada');
+    });
+
+    it('should error if data type propery body request is wrong', async () => {
+      const { id: userId } = await UsersTableTestHelper.findOne();
+      const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
+
+      const response = await supertest(server.listener)
+        .post('/threads')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          title: 10,
+          body: true,
+        });
+
+        expect(response.status).toBe(400);
+        expect(response.body.status).toBe('fail');
+        expect(response.body.message).toBe('tidak dapat membuat thread baru karena tipe data tidak sesuai');
+    });
+
+    it('should correctly create threads and return correct response', async () => {
+      const { id: userId } = await UsersTableTestHelper.findOne();
       const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
 
       const response = await supertest(server.listener)

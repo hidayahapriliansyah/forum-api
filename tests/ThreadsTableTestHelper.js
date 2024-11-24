@@ -19,12 +19,23 @@ const ThreadsTableTestHelper = {
 
     const result = await pool.query(query);
 
-    
     return result.rows[0].id;
   },
 
   async cleanTable() {
     await pool.query('DELETE FROM threads WHERE 1=1');
+  },
+
+  async findOne() {
+    const query = {
+      text: `
+        SELECT * FROM threads LIMIT 1
+      `,
+    };
+
+    const result = await pool.query(query);
+
+    return result.rows.length > 0 ? result.rows[0] : null;
   }
 }
 
