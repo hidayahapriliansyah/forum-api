@@ -5,9 +5,12 @@ const { findOne } = require('./ThreadsTableTestHelper');
 
 const UsersTableTestHelper = {
   async addUser({
-    id = 'user-123', username = 'dicoding', password = 'secret', fullname = 'Dicoding Indonesia',
-  }) {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    id = 'user-123', username = 'someusername', password = 'secret', fullname = 'Dicoding Indonesia',
+  }, usingHashPassword = true) {
+    let hashedPassword = password;
+    if (usingHashPassword) {
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
 
     const query = {
       text: 'INSERT INTO users VALUES($1, $2, $3, $4) RETURNING id',

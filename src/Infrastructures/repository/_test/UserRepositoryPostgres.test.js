@@ -91,7 +91,7 @@ describe('UserRepositoryPostgres', () => {
       await UsersTableTestHelper.addUser({
         username: 'dicoding',
         password: 'secret_password',
-      });
+      }, false);
 
       // Action & Assert
       const password = await userRepositoryPostgres.getPasswordByUsername('dicoding');

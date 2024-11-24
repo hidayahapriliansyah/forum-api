@@ -8,15 +8,14 @@ const CreateThreadCommentReply = require('../../../Domains/thread-comment-replie
 const ThreadCommentsTableTestHelper = require('../../../../tests/ThreadCommentsTableTestHelper');
 
 describe('ThreadCommentReplyRepositoryPostgress', () => {
+  afterEach(async () => {
+    await ThreadCommentRepliesTableTestHelper.cleanTable();
+    await ThreadCommentsTableTestHelper.cleanTable();
+    await ThreadsTableTestHelper.cleanTable();
+    await UsersTableTestHelper.cleanTable();
+  });
   // add
   describe('addReply', () => {
-    afterEach(async () => {
-      await ThreadCommentRepliesTableTestHelper.cleanTable();
-      await ThreadCommentsTableTestHelper.cleanTable();
-      await ThreadsTableTestHelper.cleanTable();
-      await UsersTableTestHelper.cleanTable();
-    });
-
     it('should throw error if comment is not exist', async () => {
       const userId = await UsersTableTestHelper.addUser({ username: 'hidayah' });
       const commentId = 'not-found-comment';

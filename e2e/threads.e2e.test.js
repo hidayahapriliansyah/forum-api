@@ -6,6 +6,8 @@ const { closePool } = require('../tests/PoolUtils');
 const UsersTableTestHelper = require('../tests/UsersTableTestHelper');
 const Jwt = require('@hapi/jwt');
 const ThreadsTableTestHelper = require('../tests/ThreadsTableTestHelper');
+const ThreadCommentsTableTestHelper = require('../tests/ThreadCommentsTableTestHelper');
+const ThreadCommentRepliesTableTestHelper = require('../tests/ThreadCommentRepliesTestHelper');
 
 describe('threads e2e', () => {
   const jwtTokenManager = new JwtTokenManager(Jwt.token);
@@ -130,4 +132,92 @@ describe('threads e2e', () => {
       expect(thread).not.toBeNull();
     });
   })
+
+  describe('GET /threads', () => {
+    beforeEach(async () => {
+      // create thread with comment and reply
+      const userIdA = await UsersTableTestHelper.addUser({ id: 'id-user-a', username: 'user_a' });
+      const userIdB = await UsersTableTestHelper.addUser({ id: 'id-user-b', username: 'user_b' });
+      const userIdC = await UsersTableTestHelper.addUser({ id: 'id-user-c', username: 'user_c' });
+
+      const threadId = await ThreadsTableTestHelper.addThread({ userId: userIdA });
+
+      const threadCommentAId = await ThreadCommentsTableTestHelper.addComment({
+        id: 'thread-comment-1',
+        userId: userIdB,
+        threadId,
+      });
+      const threadCommentBId = await ThreadCommentsTableTestHelper.addComment({
+        id: 'thread-comment-2',
+        userId: userIdB,
+        threadId,
+      });
+
+      await ThreadCommentRepliesTableTestHelper.addReply({
+        id: 'thread-comment-reply-1',
+        userId: userIdC,
+        threadCommentId: threadCommentAId,
+      });
+      const replyId1 = await ThreadCommentRepliesTableTestHelper.addReply({
+        id: 'thread-comment-reply-2',
+        userId: userIdC,
+        threadCommentId: threadCommentAId,
+      });
+
+      // soft delete a comment
+      await ThreadCommentsTableTestHelper.softDeleteById(threadCommentBId);
+      // soft delete a reply
+      await ThreadCommentRepliesTableTestHelper.softDeleteById(replyId1);
+    });
+
+    afterEach(async () => {
+      // delete thread comment reply
+      await ThreadsTableTestHelper.cleanTable();
+      await UsersTableTestHelper.cleanTable();
+      await ThreadCommentsTableTestHelper.cleanTable();
+      await ThreadCommentRepliesTableTestHelper.cleanTable();
+    });
+
+    // should return error not found if thread is not found
+    it('should return error not found if thread is not found', async () => {
+      const threadId = 'notfound-threadid';
+
+      const response = await supertest(server.listener)
+        .get(`/threads/${threadId}`);
+
+      expect(response.status).toBe(404);
+      expect(response.body.status).toBe('fail');
+      expect(response.body.message).toBe('tidak dapat menemukan thread');
+    });
+
+    // should return thread correctly
+    it('should return thread correctly', async () => {
+      const { id: threadId } = await ThreadsTableTestHelper.findOne();
+
+      const response = await supertest(server.listener)
+        .get(`/threads/${threadId}`);
+
+      expect(response.status).toBe(200);
+      expect(Object.keys(response.body).length).toBe(2);
+      expect(response.body.status).toBe('success');
+      expect(response.body.data.thread.id).toBe(threadId);
+      expect(response.body.data.thread.title).toBeDefined();
+      expect(response.body.data.thread.body).toBeDefined();
+      expect(response.body.data.thread.date).toBeDefined();
+      expect(response.body.data.thread.username).toBeDefined();
+      expect(response.body.data.thread.comments.length).toBe(2);
+      expect(response.body.data.thread.comments[0].id).toBe('thread-comment-2');
+      expect(response.body.data.thread.comments[0].username).toBeDefined();
+      expect(response.body.data.thread.comments[0].date).toBeDefined();
+      expect(response.body.data.thread.comments[0].content).toBeDefined();
+      expect(response.body.data.thread.comments[0].replies.length).toBe(0);
+      expect(response.body.data.thread.comments[0].content).toBe("**komentar telah dihapus**");
+      expect(response.body.data.thread.comments[1].replies.length).toBe(2);
+      expect(response.body.data.thread.comments[1].replies[0].id).toBe('thread-comment-reply-2');
+      expect(response.body.data.thread.comments[1].replies[0].username).toBeDefined();
+      expect(response.body.data.thread.comments[1].replies[0].date).toBeDefined();
+      expect(response.body.data.thread.comments[1].replies[0].content).toBeDefined();
+      expect(response.body.data.thread.comments[1].replies[0].content).toBe("**balasan telah dihapus**");
+    });
+  });
 });

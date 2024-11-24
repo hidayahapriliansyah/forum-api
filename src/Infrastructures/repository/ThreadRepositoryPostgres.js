@@ -35,7 +35,7 @@ class ThreadRepositoryPostgres extends ThreadRepository {
   async findThreadById(threadId) {
     const isThreadExist = await this.checkIsThreadExistById(threadId);
     if (!isThreadExist) {
-        throw new NotFoundError('Thread tidak ditemukan.');
+        throw new NotFoundError('FIND_THREAD.ID_THREAD_IS_NOT_FOUND');
     }
 
     const query = {
