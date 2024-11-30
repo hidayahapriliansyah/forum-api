@@ -78,7 +78,7 @@ describe('ThreadCommentRepositoryPostgres', () => {
         new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator, threadRepositoryPostgres);
 
       // action of comment soft delete repository
-      await threadCommentRepositoryPostgres.softDeleteCommentById(threadCommentId, userId);
+      await threadCommentRepositoryPostgres.softDeleteCommentById(userId, threadId, threadCommentId);
 
       const deletedComment = await ThreadCommentsTableTestHelper.findCommentById(threadCommentId);
 
@@ -89,9 +89,10 @@ describe('ThreadCommentRepositoryPostgres', () => {
   });
 
   it('should throw not found error if comment does not exist', async () => {
-      const threadCommentId = 'not-exist';
+      const userId = await UsersTableTestHelper.addUser({ username: 'hidayah' });
+      const threadId = await ThreadsTableTestHelper.addThread({ userId });
 
-      expect(threadCommentId).toBeDefined();
+      const threadCommentId = 'not-exist';
 
       const fakeIdGenerator = () => '123-aBcD';
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
@@ -99,7 +100,7 @@ describe('ThreadCommentRepositoryPostgres', () => {
         new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator, threadRepositoryPostgres);
 
       await expect(
-        threadCommentRepositoryPostgres.softDeleteCommentById(threadCommentId)
+        threadCommentRepositoryPostgres.softDeleteCommentById(userId, threadId, threadCommentId)
       ).rejects.toThrowError('Comment tidak ditemukan.');
   });
 });

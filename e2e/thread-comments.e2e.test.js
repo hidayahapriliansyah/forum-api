@@ -121,8 +121,6 @@ describe('thread comments e2e', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ content: 'content test' });
 
-      console.log('response.body =>', response.body);
-
       expect(response.status).toBe(404);
       expect(Object.keys(response.body)).toHaveLength(2);
       expect(response.body.status).toBe('fail');
