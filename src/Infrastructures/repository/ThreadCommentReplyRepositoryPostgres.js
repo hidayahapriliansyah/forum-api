@@ -2,10 +2,16 @@ const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const ThreadCommentReplyRepository = require('../../Domains/thread-comment-replies/ThreadCommentReplyRepository');
 
 class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository {
-  constructor(pool, idGenerator, threadCommentRepositoryPostgress) {
+  constructor(
+    pool,
+    idGenerator,
+    threadRepositoryPostgress,
+    threadCommentRepositoryPostgress
+  ) {
     super();
     this._pool = pool;
     this._idGenerator = idGenerator;
+    this._threadRepositoryPostgress = threadRepositoryPostgress;
     this._threadCommentRepositoryPostgress = threadCommentRepositoryPostgress;
   }
 

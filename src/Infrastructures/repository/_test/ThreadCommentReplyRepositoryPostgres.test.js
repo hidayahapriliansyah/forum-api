@@ -21,9 +21,19 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
       const commentId = 'not-found-comment';
 
       const fakeIdGenerator = () => '123-aBcD';
-      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
-      const threadCommentReplyRepositoryPostgres =
-        new ThreadCommentReplyRepositoryPostgres(pool, fakeIdGenerator, threadCommentRepositoryPostgres);
+
+      const threadRepositoryPostgress = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
+      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(
+        pool,
+        fakeIdGenerator,
+        threadRepositoryPostgress
+      );
+      const threadCommentReplyRepositoryPostgres = new ThreadCommentReplyRepositoryPostgres(
+        pool,
+        fakeIdGenerator,
+        threadRepositoryPostgress,
+        threadCommentRepositoryPostgres
+      );
 
       const createThreadCommentReply = new CreateThreadCommentReply({
         content: 'Comment content test'
@@ -41,9 +51,18 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
       const commentId = await ThreadCommentsTableTestHelper.addComment({ userId, threadId });
 
       const fakeIdGenerator = () => '123-aBcD';
-      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
-      const threadCommentReplyRepositoryPostgres =
-        new ThreadCommentReplyRepositoryPostgres(pool, fakeIdGenerator, threadCommentRepositoryPostgres);
+      const threadRepositoryPostgress = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
+      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(
+        pool,
+        fakeIdGenerator,
+        threadRepositoryPostgress
+      );
+      const threadCommentReplyRepositoryPostgres = new ThreadCommentReplyRepositoryPostgres(
+        pool,
+        fakeIdGenerator,
+        threadRepositoryPostgress,
+        threadCommentRepositoryPostgres
+      );
 
       const createThreadCommentReply = new CreateThreadCommentReply({
         content: 'Reply content test'
