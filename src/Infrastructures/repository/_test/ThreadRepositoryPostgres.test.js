@@ -47,7 +47,7 @@ describe('ThreadRepositoryPostgres', () => {
 
       await expect(threadRepositoryPostgres.findThreadById(threadId))
         .rejects
-        .toThrowError('Thread tidak ditemukan.');
+        .toThrowError('FIND_THREAD.ID_THREAD_IS_NOT_FOUND');
     });
 
     it('should return thread correctly', async () => {

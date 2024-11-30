@@ -27,6 +27,9 @@ const ThreadRepository = require('../Domains/threads/ThreadRepository');
 const ThreadRepositoryPostgres = require('./repository/ThreadRepositoryPostgres');
 const AddThreadUseCase = require('../Applications/use_case/AddThreadUseCase');
 const GetThreadDetailUseCase = require('../Applications/use_case/GetThreadDetailUseCase');
+const AddThreadCommentUseCase = require('../Applications/use_case/AddThreadCommentUseCase');
+const ThreadCommentRepository = require('../Domains/thread-comments/ThreadCommentRepository');
+const ThreadCommentRepositoryPostgres = require('./repository/ThreadCommentRepositoryPostgres');
 
 // creating container
 const container = createContainer();
@@ -90,6 +93,24 @@ container.register([
         },
         {
           concrete: nanoid,
+        },
+      ]
+    }
+  },
+  {
+    key: ThreadCommentRepository.name,
+    Class: ThreadCommentRepositoryPostgres,
+    parameter: {
+      dependencies: [
+        {
+          concrete: pool,
+        },
+        {
+          concrete: nanoid,
+        },
+        {
+          name: 'threadRepositoryPostgress',
+          internal: ThreadRepository.name,
         },
       ]
     }
@@ -195,7 +216,20 @@ container.register([
         }
       ]
     }
-  }
+  },
+  {
+    key: AddThreadCommentUseCase.name,
+    Class: AddThreadCommentUseCase,
+    parameter: {
+      injectType: 'destructuring',
+      dependencies: [
+        {
+          name: 'threadCommentRepository',
+          internal: ThreadCommentRepository.name,
+        },
+      ],
+    },
+  },
 ]);
 
 module.exports = container;

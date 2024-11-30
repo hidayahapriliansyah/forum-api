@@ -45,6 +45,18 @@ const ThreadCommentsTableTestHelper = {
 
   async cleanTable() {
     await pool.query('DELETE FROM thread_comments WHERE 1=1');
+  },
+
+  async findOne() {
+    const query = {
+      text: `
+        SELECT * FROM thread_comments LIMIT 1
+      `,
+    };
+
+    const result = await pool.query(query);
+
+    return result.rows.length > 0 ? result.rows[0] : null;
   }
 }
 

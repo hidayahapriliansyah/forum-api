@@ -5,7 +5,7 @@ const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 
 
 describe('AddThreadUseCase', () => {
-  it('should orchestrating the add user action correctly', async () => {
+  it('should orchestrating the add thread action correctly', async () => {
     const userIdPayload = 'user-123'
     const useCasePayload = {
       title: 'test title',

@@ -5,6 +5,7 @@ const users = require('../../Interfaces/http/api/users');
 const authentications = require('../../Interfaces/http/api/authentications');
 const Jwt = require('@hapi/jwt');
 const threads = require('../../Interfaces/http/api/threads');
+const threadComments = require('../../Interfaces/http/api/thread-comments');
 const InvariantError = require('../../Commons/exceptions/InvariantError');
 
 const createServer = async (container) => {
@@ -49,6 +50,10 @@ const createServer = async (container) => {
       plugin: threads,
       options: { container },
     },
+    {
+      plugin: threadComments,
+      options: { container },
+    },
   ]);
 
   server.ext('onPreResponse', (request, h) => {
@@ -58,6 +63,8 @@ const createServer = async (container) => {
     if (response instanceof Error) {      
       // bila response tersebut error, tangani sesuai kebutuhan
       const translatedError = DomainErrorTranslator.translate(response);
+
+      // console.log('translatedError =>', translatedError);
 
       // penanganan client error secara internal.
       if (translatedError instanceof ClientError) {
