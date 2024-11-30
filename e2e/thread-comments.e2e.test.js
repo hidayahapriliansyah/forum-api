@@ -108,6 +108,25 @@ describe('thread comments e2e', () => {
         expect(response.body.message).toBe('tidak dapat membuat comment baru karena tipe data tidak sesuai');
     });
 
+    fit('should error if thread is not found', async () => {
+      const { id: userId } = await UsersTableTestHelper.findOne();
+      const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
+      const threadId = 'not_found';
+
+      const response = await supertest(server.listener)
+        .post(`/threads/${threadId}/comments`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ content: 'content test' });
+
+      console.log('response.body =>', response.body);
+
+      expect(response.status).toBe(404);
+      expect(Object.keys(response.body)).toHaveLength(2);
+      expect(response.body.status).toBe('fail');
+      expect(response.body.message).toBe('Thread tidak ditemukan.');
+
+    });
+
     it('should correctly create thread commment and return correct response', async () => {
       const { id: userId } = await UsersTableTestHelper.findOne();
       const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
