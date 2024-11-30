@@ -78,7 +78,7 @@ describe('ThreadCommentRepositoryPostgres', () => {
         new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator, threadRepositoryPostgres);
 
       // action of comment soft delete repository
-      await threadCommentRepositoryPostgres.softDeleteCommentById(threadCommentId);
+      await threadCommentRepositoryPostgres.softDeleteCommentById(threadCommentId, userId);
 
       const deletedComment = await ThreadCommentsTableTestHelper.findCommentById(threadCommentId);
 

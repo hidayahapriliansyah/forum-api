@@ -11,7 +11,6 @@ class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
   }
 
   async addComment(userId, threadId, createThreadComment) {
-    // find dulu thread nya ada nggak
     const isThreadExist = await this._threadRepositoryPostgress.checkIsThreadExistById(threadId)
     if (!isThreadExist) {
       throw new NotFoundError('Thread tidak ditemukan.');
@@ -37,8 +36,13 @@ class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
     return new CreatedThreadComment({ ...result.rows[0] });
   }
 
-  async softDeleteCommentById(commentId) {
-    await this.verifyCommentExistenceById(commentId);
+  async softDeleteCommentById(userId, threadId, commentId) {
+    const isThreadExist = await this._threadRepositoryPostgress.checkIsThreadExistById(threadId)
+    if (!isThreadExist) {
+      throw new NotFoundError('Thread tidak ditemukan.');
+    }
+
+    await this.verifyCommentOwnerByUserExistenceById(commentId, userId);
 
     const now = new Date();
     const query = {
@@ -63,9 +67,27 @@ class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
     return result.rows.length > 0 ? true : false;
   }
 
+  async checkIsCommentOwnedByUserExistById(commentId, userId) {
+    const query = {
+      text: 'SELECT id FROM thread_comments WHERE id = $1 AND user_id = $2',
+      values: [commentId, userId],
+    }
+    const result = await this._pool.query(query);
+
+    return result.rows.length > 0 ? true : false;
+  }
+
   async verifyCommentExistenceById(commentId) {
     const isCommentExist = await this.checkIsCommentExistById(commentId);
     if (!isCommentExist) {
+      throw new NotFoundError('Comment tidak ditemukan.');
+    }
+    return true;
+  }
+
+  async verifyCommentOwnerByUserExistenceById(commentId, userId) {
+    const isCommentOwnedByUserExist = await this.checkIsCommentOwnedByUserExistById(commentId, userId);
+    if (!isCommentOwnedByUserExist) {
       throw new NotFoundError('Comment tidak ditemukan.');
     }
     return true;

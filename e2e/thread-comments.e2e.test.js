@@ -20,6 +20,7 @@ describe('thread comments e2e', () => {
   });
 
   afterAll(async () => {
+    await ThreadCommentsTableTestHelper.cleanTable();
     await ThreadsTableTestHelper.cleanTable();
     await UsersTableTestHelper.cleanTable();
 
@@ -34,7 +35,9 @@ describe('thread comments e2e', () => {
       password: 'testpw',
     });
 
-    await ThreadsTableTestHelper.addThread({ userId, id: 'thread-id-dummy' });
+    const threadId = await ThreadsTableTestHelper.addThread({ userId, id: 'thread-id-dummy' });
+    await ThreadCommentsTableTestHelper
+      .addComment({ userId, threadId, id: 'thread-commentid-dummy' });
   });
 
   afterEach(async () => {
@@ -108,7 +111,7 @@ describe('thread comments e2e', () => {
         expect(response.body.message).toBe('tidak dapat membuat comment baru karena tipe data tidak sesuai');
     });
 
-    fit('should error if thread is not found', async () => {
+    it('should error if thread is not found', async () => {
       const { id: userId } = await UsersTableTestHelper.findOne();
       const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
       const threadId = 'not_found';
@@ -150,5 +153,108 @@ describe('thread comments e2e', () => {
       const thread = await ThreadsTableTestHelper.findOne();
       expect(thread).not.toBeNull();
     });
+  });
+
+  describe('DELETE /threads/{threadId}/comments/{commentId}', () => {
+    // should error if not sending auth header property
+    it('should error if not sending auth header property', async () => {
+      const { id: threadId } = await ThreadsTableTestHelper.findOne();
+      const { id: threadCommentId } = await ThreadCommentsTableTestHelper.findOne();
+
+      const response = await supertest(server.listener)
+        .delete(`/threads/${threadId}/comments/${threadCommentId}`)
+
+      expect(response.status).toBe(401);
+      expect(response.body.statusCode).toBe(401);
+      expect(response.body.error).toBe('Unauthorized');
+      expect(response.body.message).toBe('Missing authentication');
+    });
+
+    it('should error if not sending wrong access token', async () => {
+      const accessToken = 'random access token';
+      const { id: threadId } = await ThreadsTableTestHelper.findOne();
+      const { id: threadCommentId } = await ThreadCommentsTableTestHelper.findOne();
+
+      const response = await supertest(server.listener)
+        .delete(`/threads/${threadId}/comments/${threadCommentId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+
+      expect(response.body.statusCode).toBe(401);
+      expect(response.body.error).toBe('Unauthorized');
+      expect(response.body.message).toBe('Bad HTTP authentication header format');
+      expect(response.status).toBe(401);
+    });
+
+    it('should error if thread is not found', async () => {
+      const { id: userId } = await UsersTableTestHelper.findOne();
+      const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
+      const threadId = 'not_found';
+      const { id: threadCommentId } = await ThreadCommentsTableTestHelper.findOne();
+
+      const response = await supertest(server.listener)
+        .delete(`/threads/${threadId}/comments/${threadCommentId}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(response.status).toBe(404);
+      expect(Object.keys(response.body)).toHaveLength(2);
+      expect(response.body.status).toBe('fail');
+      expect(response.body.message).toBe('Thread tidak ditemukan.');
+    });
+
+    it('should error notfound if comment is owned by user', async () => {
+      const newUserIdWithoutComment = await UsersTableTestHelper.addUser({ 
+        id: 'new-userId',
+        username: 'new-test_username',
+        password: 'new-testpw',
+      });
+
+      const accessToken = await jwtTokenManager.createAccessToken({ id: newUserIdWithoutComment });
+      const { id: threadId } = await ThreadsTableTestHelper.findOne();
+      const { id: threadCommentId } = await ThreadCommentsTableTestHelper.findOne();
+
+      const response = await supertest(server.listener)
+        .delete(`/threads/${threadId}/comments/${threadCommentId}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(response.status).toBe(404);
+      expect(Object.keys(response.body)).toHaveLength(2);
+      expect(response.body.status).toBe('fail');
+      expect(response.body.message).toBe('Comment tidak ditemukan.');
+    });
+
+    it('should error not found if comment is not exist', async () => {
+      const { id: userId } = await UsersTableTestHelper.findOne();
+      const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
+      const { id: threadId } = await ThreadsTableTestHelper.findOne();
+      const threadCommentId = 'not_found-commentId';
+
+      const response = await supertest(server.listener)
+        .delete(`/threads/${threadId}/comments/${threadCommentId}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(response.status).toBe(404);
+      expect(Object.keys(response.body)).toHaveLength(2);
+      expect(response.body.status).toBe('fail');
+      expect(response.body.message).toBe('Comment tidak ditemukan.');
+    });
+
+    it('should correctly soft delete thread comment and return correct response', async () => {
+      const { id: userId } = await UsersTableTestHelper.findOne();
+      const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
+      const { id: threadId } = await ThreadsTableTestHelper.findOne();
+      const { id: threadCommentId } = await ThreadCommentsTableTestHelper.findOne();
+
+      const response = await supertest(server.listener)
+        .delete(`/threads/${threadId}/comments/${threadCommentId}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(response.status).toBe(200);
+      expect(Object.keys(response.body)).toHaveLength(2);
+      expect(response.body.status).toBe('success');
+      expect(response.body.message).toBe('Berhasil menghapus comment');
+
+      const threadCommentOnDb = await ThreadCommentsTableTestHelper.findOne();
+      expect(threadCommentOnDb.is_delete).toBe(true);
+    })
   });
 });
