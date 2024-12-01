@@ -214,10 +214,10 @@ describe('thread comments e2e', () => {
         .delete(`/threads/${threadId}/comments/${threadCommentId}`)
         .set('Authorization', `Bearer ${accessToken}`);
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(403);
       expect(Object.keys(response.body)).toHaveLength(2);
       expect(response.body.status).toBe('fail');
-      expect(response.body.message).toBe('Comment tidak ditemukan.');
+      expect(response.body.message).toBe('Forbidden');
     });
 
     it('should error not found if comment is not exist', async () => {

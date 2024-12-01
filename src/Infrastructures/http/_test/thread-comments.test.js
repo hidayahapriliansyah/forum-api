@@ -256,7 +256,7 @@ describe('/thread/{threadId}/comments e2e', () => {
       expect(responseJson.message).toBe('Thread tidak ditemukan.');
     });
 
-    it('should error notfound if comment is owned by user', async () => {
+    it('should error notfound if comment is not owned by user', async () => {
       const server = await createServer(container);
 
       const newUserIdWithoutComment = await UsersTableTestHelper.addUser({ 
@@ -279,10 +279,10 @@ describe('/thread/{threadId}/comments e2e', () => {
 
       const responseJson = JSON.parse(response.payload);
 
-      expect(response.statusCode).toBe(404);
+      expect(response.statusCode).toBe(403);
       expect(Object.keys(responseJson)).toHaveLength(2);
       expect(responseJson.status).toBe('fail');
-      expect(responseJson.message).toBe('Comment tidak ditemukan.');
+      expect(responseJson.message).toBe('Forbidden');
     });
 
     it('should error not found if comment is not exist', async () => {

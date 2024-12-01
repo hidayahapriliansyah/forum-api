@@ -1,3 +1,5 @@
+const { toHex } = require('@hapi/jwt/lib/utils');
+const ForbiddenError = require('../../Commons/exceptions/ForbiddenError');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const CreatedThreadComment = require('../../Domains/thread-comments/entities/CreatedThreadComment');
 const ThreadCommentRepository = require('../../Domains/thread-comments/ThreadCommentRepository');
@@ -57,38 +59,32 @@ class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
     await this._pool.query(query);
   }
 
-  async checkIsCommentExistById(commentId) {
+  async findCommentById(commentId) {
     const query = {
-      text: 'SELECT id FROM thread_comments WHERE id = $1',
+      text: 'SELECT * FROM thread_comments WHERE id = $1',
       values: [commentId],
-    }
+    };
+
     const result = await this._pool.query(query);
-
-    return result.rows.length > 0 ? true : false;
-  }
-
-  async checkIsCommentOwnedByUserExistById(commentId, userId) {
-    const query = {
-      text: 'SELECT id FROM thread_comments WHERE id = $1 AND user_id = $2',
-      values: [commentId, userId],
-    }
-    const result = await this._pool.query(query);
-
-    return result.rows.length > 0 ? true : false;
+    return result.rows.length > 0 ? result.rows[0] : null;
   }
 
   async verifyCommentExistenceById(commentId) {
-    const isCommentExist = await this.checkIsCommentExistById(commentId);
-    if (!isCommentExist) {
+    const threadComment = await this.findCommentById(commentId);
+    if (!threadComment) {
       throw new NotFoundError('Comment tidak ditemukan.');
     }
     return true;
   }
 
   async verifyCommentOwnerByUserExistenceById(commentId, userId) {
-    const isCommentOwnedByUserExist = await this.checkIsCommentOwnedByUserExistById(commentId, userId);
-    if (!isCommentOwnedByUserExist) {
+    const threadComment = await this.findCommentById(commentId);
+    if (!threadComment) {
       throw new NotFoundError('Comment tidak ditemukan.');
+    }
+
+    if (threadComment.user_id !== userId) {
+      throw new ForbiddenError('Forbidden');
     }
     return true;
   }

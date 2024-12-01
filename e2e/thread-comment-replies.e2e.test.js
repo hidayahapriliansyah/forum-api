@@ -245,7 +245,7 @@ describe('thread comments e2e', () => {
       expect(response.body.message).toBe('Comment tidak ditemukan.');
     });
 
-    it('should error notfound if comment reply is owned by user', async () => {
+    it('should error notfound if comment reply is not owned by user', async () => {
       const newUserIdWithoutCommentReply = await UsersTableTestHelper.addUser({ 
         id: 'new-userId',
         username: 'new-test_username',
@@ -261,10 +261,10 @@ describe('thread comments e2e', () => {
         .delete(`/threads/${threadId}/comments/${threadCommentId}/replies/${threadCommentReplyId}`)
         .set('Authorization', `Bearer ${accessToken}`);
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(403);
       expect(Object.keys(response.body)).toHaveLength(2);
       expect(response.body.status).toBe('fail');
-      expect(response.body.message).toBe('Reply tidak ditemukan.');
+      expect(response.body.message).toBe('Forbidden');
     });
 
     it('should error not found if comment reply is not exist', async () => {

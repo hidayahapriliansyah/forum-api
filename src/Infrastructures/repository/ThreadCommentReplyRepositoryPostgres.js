@@ -1,3 +1,4 @@
+const ForbiddenError = require('../../Commons/exceptions/ForbiddenError');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const ThreadCommentReplyRepository = require('../../Domains/thread-comment-replies/ThreadCommentReplyRepository');
 
@@ -55,20 +56,24 @@ class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository 
     await this._pool.query(query);
   }
 
-  async checkIsReplyOwnedByUserExistById(replyId, userId) {
+  async findCommentReplyById(replyId) {
     const query = {
-      text: 'SELECT id FROM thread_comment_replies WHERE id = $1 AND user_id = $2',
-      values: [replyId, userId],
-    }
-    const result = await this._pool.query(query);
+      text: 'SELECT * FROM thread_comment_replies WHERE id = $1',
+      values: [replyId],
+    };
 
-    return result.rows.length > 0 ? true : false;
+    const result = await this._pool.query(query);
+    return result.rows.length > 0 ? result.rows[0] : null;
   }
 
   async verifyReplyOwnerByUserExistenceById(replyId, userId) {
-    const isReplyOwnedByUserExist = await this.checkIsReplyOwnedByUserExistById(replyId, userId);
-    if (!isReplyOwnedByUserExist) {
+    const threadCommentReply = await this.findCommentReplyById(replyId);
+    if (!threadCommentReply) {
       throw new NotFoundError('Reply tidak ditemukan.');
+    }
+
+    if (threadCommentReply.user_id !== userId) {
+      throw new ForbiddenError('Forbidden');
     }
     return true;
   }

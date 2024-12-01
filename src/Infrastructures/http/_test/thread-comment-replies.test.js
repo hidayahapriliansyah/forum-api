@@ -324,7 +324,7 @@ describe('/threads/{threadId}/comments/{commentId}/replies endpoint', () => {
       expect(responseJson.message).toBe('Comment tidak ditemukan.');
     });
 
-    it('should error notfound if comment reply is owned by user', async () => {
+    it('should error notfound if comment reply is not owned by user', async () => {
       const server = await createServer(container);
 
       const newUserIdWithoutCommentReply = await UsersTableTestHelper.addUser({ 
@@ -348,10 +348,10 @@ describe('/threads/{threadId}/comments/{commentId}/replies endpoint', () => {
 
       const responseJson = JSON.parse(response.payload);
 
-      expect(response.statusCode).toBe(404);
+      expect(response.statusCode).toBe(403);
       expect(Object.keys(responseJson)).toHaveLength(2);
       expect(responseJson.status).toBe('fail');
-      expect(responseJson.message).toBe('Reply tidak ditemukan.');
+      expect(responseJson.message).toBe('Forbidden');
     });
 
     it('should error not found if comment reply is not exist', async () => {
