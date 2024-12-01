@@ -178,4 +178,129 @@ describe('thread comments e2e', () => {
       expect(threadCommentReply).not.toBeNull();
     });
   });
+
+  describe('DELETE /threads/{threadId}/comments/{commentId}/replies/{replyId}', () => {
+    // should error if not sending auth header property
+    it('should error if not sending auth header property', async () => {
+      const { id: threadId } = await ThreadsTableTestHelper.findOne();
+      const { id: threadCommentId } = await ThreadCommentsTableTestHelper.findOne();
+      const { id: threadCommentReplyId } = await ThreadCommentRepliesTableTestHelper.findOne();
+
+      const response = await supertest(server.listener)
+        .delete(`/threads/${threadId}/comments/${threadCommentId}/replies/${threadCommentReplyId}`);
+
+      expect(response.status).toBe(401);
+      expect(response.body.statusCode).toBe(401);
+      expect(response.body.error).toBe('Unauthorized');
+      expect(response.body.message).toBe('Missing authentication');
+    });
+
+    it('should error if not sending wrong access token', async () => {
+      const accessToken = 'random access token';
+      const { id: threadId } = await ThreadsTableTestHelper.findOne();
+      const { id: threadCommentId } = await ThreadCommentsTableTestHelper.findOne();
+      const { id: threadCommentReplyId } = await ThreadCommentRepliesTableTestHelper.findOne();
+
+      const response = await supertest(server.listener)
+        .delete(`/threads/${threadId}/comments/${threadCommentId}/replies/${threadCommentReplyId}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(response.body.statusCode).toBe(401);
+      expect(response.body.error).toBe('Unauthorized');
+      expect(response.body.message).toBe('Bad HTTP authentication header format');
+      expect(response.status).toBe(401);
+    });
+
+    it('should error if thread is not found', async () => {
+      const { id: userId } = await UsersTableTestHelper.findOne();
+      const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
+      const threadId = 'not_found';
+      const { id: threadCommentId } = await ThreadCommentsTableTestHelper.findOne();
+      const { id: threadCommentReplyId } = await ThreadCommentRepliesTableTestHelper.findOne();
+
+      const response = await supertest(server.listener)
+        .delete(`/threads/${threadId}/comments/${threadCommentId}/replies/${threadCommentReplyId}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(response.status).toBe(404);
+      expect(Object.keys(response.body)).toHaveLength(2);
+      expect(response.body.status).toBe('fail');
+      expect(response.body.message).toBe('Thread tidak ditemukan.');
+    });
+
+    it('should error if comment is not found', async () => {
+      const { id: userId } = await UsersTableTestHelper.findOne();
+      const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
+      const { id: threadId } = await ThreadsTableTestHelper.findOne();
+      const threadCommentId = 'not_found';
+      const { id: threadCommentReplyId } = await ThreadCommentRepliesTableTestHelper.findOne();
+
+      const response = await supertest(server.listener)
+        .delete(`/threads/${threadId}/comments/${threadCommentId}/replies/${threadCommentReplyId}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(response.status).toBe(404);
+      expect(Object.keys(response.body)).toHaveLength(2);
+      expect(response.body.status).toBe('fail');
+      expect(response.body.message).toBe('Comment tidak ditemukan.');
+    });
+
+    it('should error notfound if comment reply is owned by user', async () => {
+      const newUserIdWithoutCommentReply = await UsersTableTestHelper.addUser({ 
+        id: 'new-userId',
+        username: 'new-test_username',
+        password: 'new-testpw',
+      });
+
+      const accessToken = await jwtTokenManager.createAccessToken({ id: newUserIdWithoutCommentReply });
+      const { id: threadId } = await ThreadsTableTestHelper.findOne();
+      const { id: threadCommentId } = await ThreadCommentsTableTestHelper.findOne();
+      const { id: threadCommentReplyId } = await ThreadCommentRepliesTableTestHelper.findOne();
+
+      const response = await supertest(server.listener)
+        .delete(`/threads/${threadId}/comments/${threadCommentId}/replies/${threadCommentReplyId}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(response.status).toBe(404);
+      expect(Object.keys(response.body)).toHaveLength(2);
+      expect(response.body.status).toBe('fail');
+      expect(response.body.message).toBe('Reply tidak ditemukan.');
+    });
+
+    it('should error not found if comment reply is not exist', async () => {
+      const { id: userId } = await UsersTableTestHelper.findOne();
+      const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
+      const { id: threadId } = await ThreadsTableTestHelper.findOne();
+      const { id: threadCommentId } = await ThreadCommentsTableTestHelper.findOne();
+      const threadCommentReplyId = 'not_found-comment-replyId';
+
+      const response = await supertest(server.listener)
+        .delete(`/threads/${threadId}/comments/${threadCommentId}/replies/${threadCommentReplyId}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(response.status).toBe(404);
+      expect(Object.keys(response.body)).toHaveLength(2);
+      expect(response.body.status).toBe('fail');
+      expect(response.body.message).toBe('Reply tidak ditemukan.');
+    });
+
+    it('should correctly soft delete thread comment reply and return correct response', async () => {
+      const { id: userId } = await UsersTableTestHelper.findOne();
+      const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
+      const { id: threadId } = await ThreadsTableTestHelper.findOne();
+      const { id: threadCommentId } = await ThreadCommentsTableTestHelper.findOne();
+      const { id: threadCommentReplyId } = await ThreadCommentRepliesTableTestHelper.findOne();
+
+      const response = await supertest(server.listener)
+        .delete(`/threads/${threadId}/comments/${threadCommentId}/replies/${threadCommentReplyId}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(response.status).toBe(200);
+      expect(Object.keys(response.body)).toHaveLength(1);
+      expect(response.body.status).toBe('success');
+
+      const threadCommentReplyOnDb = await ThreadCommentRepliesTableTestHelper.findOne();
+      expect(threadCommentReplyOnDb.is_delete).toBe(true);
+    })
+  });
 });

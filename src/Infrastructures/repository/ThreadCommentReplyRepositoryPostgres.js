@@ -38,8 +38,10 @@ class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository 
     return result.rows[0];
   }
 
-  async softDeleteCommentReplyById(replyId) {
-    await this.verifyReplyExistenceById(replyId);
+  async softDeleteCommentReplyById(userId, threadId, commentId, replyId) {
+    await this._threadRepositoryPostgress.verifyThreadExistenceById(threadId);
+    await this._threadCommentRepositoryPostgress.verifyCommentExistenceById(commentId);
+    await this.verifyReplyOwnerByUserExistenceById(replyId, userId);
 
     const query = {
       text: `
@@ -65,6 +67,24 @@ class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository 
   async verifyReplyExistenceById(replyId) {
     const isReplyExist = await this.checkIsReplyExist(replyId);
     if (!isReplyExist) {
+      throw new NotFoundError('Reply tidak ditemukan.');
+    }
+    return true;
+  }
+
+  async checkIsReplyOwnedByUserExistById(replyId, userId) {
+    const query = {
+      text: 'SELECT id FROM thread_comment_replies WHERE id = $1 AND user_id = $2',
+      values: [replyId, userId],
+    }
+    const result = await this._pool.query(query);
+
+    return result.rows.length > 0 ? true : false;
+  }
+
+  async verifyReplyOwnerByUserExistenceById(replyId, userId) {
+    const isReplyOwnedByUserExist = await this.checkIsReplyOwnedByUserExistById(replyId, userId);
+    if (!isReplyOwnedByUserExist) {
       throw new NotFoundError('Reply tidak ditemukan.');
     }
     return true;
