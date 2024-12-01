@@ -15,7 +15,8 @@ class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository 
     this._threadCommentRepositoryPostgress = threadCommentRepositoryPostgress;
   }
 
-  async addCommentReply(userId, commentId, createCommentReply) {
+  async addCommentReply(userId, threadId, commentId, createCommentReply) {
+    await this._threadRepositoryPostgress.verifyThreadExistenceById(threadId);
     await this._threadCommentRepositoryPostgress.verifyCommentExistenceById(commentId);
 
     const id = `thread-comment-reply-${this._idGenerator()}`

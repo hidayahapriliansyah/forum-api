@@ -51,6 +51,18 @@ const ThreadCommentRepliesTableTestHelper = {
     };
     await pool.query(query);
   },
+
+  async findOne() {
+    const query = {
+      text: `
+        SELECT * FROM thread_comment_replies LIMIT 1
+      `,
+    };
+
+    const result = await pool.query(query);
+
+    return result.rows.length > 0 ? result.rows[0] : null;
+  },
 }
 
 module.exports = ThreadCommentRepliesTableTestHelper;

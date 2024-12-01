@@ -1,5 +1,3 @@
-const { options } = require('@hapi/hapi/lib/cors');
-
 const routes = (handler) => ([
   {
     method: 'POST',
@@ -15,18 +13,6 @@ const routes = (handler) => ([
     path: '/threads/{threadId}',
     // handler: handler.postUserHandler,
     handler: handler.getThreadByIdHandler,
-  },
-  {
-    method: 'POST',
-    path: '/threads/{threadId}/comments/{commentId}/replies',
-    // handler: handler.postUserHandler,
-    handler: () => {},
-  },
-  {
-    method: 'DELETE',
-    path: '/threads/{threadId}/comments/{commentId}/replies',
-    // handler: handler.postUserHandler,
-    handler: () => {},
   },
 ]);
 

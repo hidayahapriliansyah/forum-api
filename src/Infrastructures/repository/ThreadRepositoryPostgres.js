@@ -127,6 +127,14 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     return result.rows.length > 0 ? true : false;
   }
 
+  async verifyThreadExistenceById(threadId) {
+    const isThreadExist = await this.checkIsThreadExistById(threadId);
+    if (!isThreadExist) {
+      throw new NotFoundError('Thread tidak ditemukan.');
+    }
+    return true;
+  }
+
   _changeDeletedCommentContent(isDelete, content) {
     return isDelete ? "**komentar telah dihapus**" : content;
   }

@@ -6,6 +6,7 @@ const authentications = require('../../Interfaces/http/api/authentications');
 const Jwt = require('@hapi/jwt');
 const threads = require('../../Interfaces/http/api/threads');
 const threadComments = require('../../Interfaces/http/api/thread-comments');
+const threadCommentReplies = require('../../Interfaces/http/api/thread-comment-replies');
 const InvariantError = require('../../Commons/exceptions/InvariantError');
 
 const createServer = async (container) => {
@@ -52,6 +53,10 @@ const createServer = async (container) => {
     },
     {
       plugin: threadComments,
+      options: { container },
+    },
+    {
+      plugin: threadCommentReplies,
       options: { container },
     },
   ]);
