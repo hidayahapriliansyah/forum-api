@@ -35,7 +35,6 @@ class ThreadCommentsHandler {
 
     const response = h.response({
       status: 'success',
-      message: 'Berhasil menghapus comment',
     })
 
     response.code(200);

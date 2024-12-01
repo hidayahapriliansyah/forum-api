@@ -328,9 +328,8 @@ describe('/thread/{threadId}/comments e2e', () => {
       const responseJson = JSON.parse(response.payload);
 
       expect(response.statusCode).toBe(200);
-      expect(Object.keys(responseJson)).toHaveLength(2);
+      expect(Object.keys(responseJson)).toHaveLength(1);
       expect(responseJson.status).toBe('success');
-      expect(responseJson.message).toBe('Berhasil menghapus comment');
 
       const threadCommentOnDb = await ThreadCommentsTableTestHelper.findOne();
       expect(threadCommentOnDb.is_delete).toBe(true);

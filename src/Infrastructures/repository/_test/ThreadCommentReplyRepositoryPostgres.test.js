@@ -6,6 +6,7 @@ const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper
 const ThreadCommentRepliesTableTestHelper = require('../../../../tests/ThreadCommentRepliesTestHelper');
 const CreateThreadCommentReply = require('../../../Domains/thread-comment-replies/entities/CreateThreadCommentReply');
 const ThreadCommentsTableTestHelper = require('../../../../tests/ThreadCommentsTableTestHelper');
+const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
 
 describe('ThreadCommentReplyRepositoryPostgress', () => {
   afterEach(async () => {
@@ -18,11 +19,12 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
   describe('addReply', () => {
     it('should throw error if comment is not exist', async () => {
       const userId = await UsersTableTestHelper.addUser({ username: 'hidayah' });
+      const threadId = await ThreadsTableTestHelper.addThread({ userId });
       const commentId = 'not-found-comment';
 
       const fakeIdGenerator = () => '123-aBcD';
 
-      const threadRepositoryPostgress = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
+      const threadRepositoryPostgress = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
       const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(
         pool,
         fakeIdGenerator,
@@ -41,17 +43,17 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
 
       await expect(
         threadCommentReplyRepositoryPostgres
-          .addCommentReply(userId, commentId, createThreadCommentReply)
+          .addCommentReply(userId, threadId, commentId, createThreadCommentReply)
       ).rejects.toThrow('Comment tidak ditemukan');
     });
 
     it('should add reply to a comment correctly', async () => {
       const userId = await UsersTableTestHelper.addUser({ username: 'hidayah' });
-      const threadId = await ThreadsTableTestHelper.addThread({ userId })
+      const threadId = await ThreadsTableTestHelper.addThread({ userId });
       const commentId = await ThreadCommentsTableTestHelper.addComment({ userId, threadId });
 
       const fakeIdGenerator = () => '123-aBcD';
-      const threadRepositoryPostgress = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
+      const threadRepositoryPostgress = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
       const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(
         pool,
         fakeIdGenerator,
@@ -69,7 +71,7 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
       });
 
       const reply = await threadCommentReplyRepositoryPostgres
-        .addCommentReply(userId, commentId, createThreadCommentReply);
+        .addCommentReply(userId, threadId, commentId, createThreadCommentReply);
 
       expect(reply.id).toBe('thread-comment-reply-123-aBcD');
       expect(reply.content).toBe('Reply content test');
@@ -79,15 +81,32 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
 
   describe('softDeleteCommentReply', () => {
     it('should throw error if reply is not exist', async () => {
-      const commentId = 'not-found-comment';
+      const userId = await UsersTableTestHelper.addUser({ username: 'hidayah' });
+      const threadId = await ThreadsTableTestHelper.addThread({ userId });
+      const commentId = await ThreadCommentsTableTestHelper.addComment({ userId, threadId });
+      const replyId = 'not-found-comment';
 
       const fakeIdGenerator = () => '123-aBcD';
-      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
-      const threadCommentReplyRepositoryPostgres =
-        new ThreadCommentReplyRepositoryPostgres(pool, fakeIdGenerator, threadCommentRepositoryPostgres);
+      const threadRepositoryPostgress = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(
+        pool,
+        fakeIdGenerator,
+        threadRepositoryPostgress
+      );
+      const threadCommentReplyRepositoryPostgres = new ThreadCommentReplyRepositoryPostgres(
+        pool,
+        fakeIdGenerator,
+        threadRepositoryPostgress,
+        threadCommentRepositoryPostgres
+      );
 
       await expect(
-        threadCommentReplyRepositoryPostgres.softDeleteCommentReplyById(commentId)
+        threadCommentReplyRepositoryPostgres.softDeleteCommentReplyById(
+          userId,
+          threadId,
+          commentId,
+          replyId,
+        )
       ).rejects.toThrowError('Reply tidak ditemukan.');
     });
 
@@ -98,16 +117,23 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
       const replyId = await ThreadCommentRepliesTableTestHelper
         .addReply({ userId, threadCommentId: commentId });
 
-
       const fakeIdGenerator = () => '123-aBcD';
-      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
-      const threadCommentReplyRepositoryPostgres =
-        new ThreadCommentReplyRepositoryPostgres(pool, fakeIdGenerator, threadCommentRepositoryPostgres);
+      const threadRepositoryPostgress = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(
+        pool,
+        fakeIdGenerator,
+        threadRepositoryPostgress
+      );
+      const threadCommentReplyRepositoryPostgres = new ThreadCommentReplyRepositoryPostgres(
+        pool,
+        fakeIdGenerator,
+        threadRepositoryPostgress,
+        threadCommentRepositoryPostgres
+      );
 
-      // action of tested repository
-      await threadCommentReplyRepositoryPostgres.softDeleteCommentReplyById(replyId);
+      await threadCommentReplyRepositoryPostgres
+        .softDeleteCommentReplyById(userId, threadId, commentId, replyId);
 
-      // check
       const deletedReply = await ThreadCommentRepliesTableTestHelper.findReplyByid(replyId);
       expect(deletedReply.id).toBe(replyId);
       expect(deletedReply.deleted_at).not.toBeNull();
