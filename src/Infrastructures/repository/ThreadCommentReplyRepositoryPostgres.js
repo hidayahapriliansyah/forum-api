@@ -55,23 +55,6 @@ class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository 
     await this._pool.query(query);
   }
 
-  async checkIsReplyExist(replyId) {
-    const query = {
-      text: 'SELECT id FROM thread_comment_replies WHERE id = $1',
-      values: [replyId],
-    };
-    const result = await this._pool.query(query);
-    return result.rows.length > 0 ? true : false;
-  }
-
-  async verifyReplyExistenceById(replyId) {
-    const isReplyExist = await this.checkIsReplyExist(replyId);
-    if (!isReplyExist) {
-      throw new NotFoundError('Reply tidak ditemukan.');
-    }
-    return true;
-  }
-
   async checkIsReplyOwnedByUserExistById(replyId, userId) {
     const query = {
       text: 'SELECT id FROM thread_comment_replies WHERE id = $1 AND user_id = $2',

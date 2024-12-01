@@ -236,7 +236,7 @@ describe('thread comments e2e', () => {
       expect(response.body.message).toBe('Comment tidak ditemukan.');
     });
 
-    fit('should correctly soft delete thread comment and return correct response', async () => {
+    it('should correctly soft delete thread comment and return correct response', async () => {
       const { id: userId } = await UsersTableTestHelper.findOne();
       const accessToken = await jwtTokenManager.createAccessToken({ id: userId });
       const { id: threadId } = await ThreadsTableTestHelper.findOne();
