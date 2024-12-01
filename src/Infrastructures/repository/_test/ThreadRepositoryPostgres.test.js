@@ -51,38 +51,31 @@ describe('ThreadRepositoryPostgres', () => {
     });
 
     it('should return thread correctly', async () => {
-      // create user a
-      // create thread from user a
-      // create user b
-      // create comment for thread user a from user b
-      // create user c
-      // create reply for thread comment user b from user c
-
       const userIdA = await UsersTableTestHelper.addUser({ id: 'id-user-a', username: 'user_a' });
       const userIdB = await UsersTableTestHelper.addUser({ id: 'id-user-b', username: 'user_b' });
       const userIdC = await UsersTableTestHelper.addUser({ id: 'id-user-c', username: 'user_c' });
 
       const threadId = await ThreadsTableTestHelper.addThread({ userId: userIdA });
 
-      const threadCommentAId = await ThreadCommentsTableTestHelper.addComment({
-        id: 'thread-comment-1',
-        userId: userIdB,
-        threadId,
-      });
       const threadCommentBId = await ThreadCommentsTableTestHelper.addComment({
         id: 'thread-comment-2',
         userId: userIdB,
         threadId,
       });
+      const threadCommentAId = await ThreadCommentsTableTestHelper.addComment({
+        id: 'thread-comment-1',
+        userId: userIdB,
+        threadId,
+      });
 
       // create 2 reply on not deleted comment
-      await ThreadCommentRepliesTableTestHelper.addReply({
-        id: 'thread-comment-reply-1',
+      const replyId1 = await ThreadCommentRepliesTableTestHelper.addReply({
+        id: 'thread-comment-reply-2',
         userId: userIdC,
         threadCommentId: threadCommentAId,
       });
-      const replyId1 = await ThreadCommentRepliesTableTestHelper.addReply({
-        id: 'thread-comment-reply-2',
+      await ThreadCommentRepliesTableTestHelper.addReply({
+        id: 'thread-comment-reply-1',
         userId: userIdC,
         threadCommentId: threadCommentAId,
       });

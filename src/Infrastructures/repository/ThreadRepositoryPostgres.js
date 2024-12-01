@@ -64,8 +64,8 @@ class ThreadRepositoryPostgres extends ThreadRepository {
         LEFT JOIN users as utcr ON utcr.id=tcr.user_id
         WHERE t.id = $1
         ORDER BY
-          tc.created_at DESC,
-          tcr.created_at DESC 
+          tc.created_at ASC,
+          tcr.created_at ASC 
       `,
       values: [threadId]
     };

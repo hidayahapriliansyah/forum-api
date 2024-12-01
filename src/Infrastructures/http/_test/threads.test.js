@@ -177,24 +177,24 @@ describe('/threads endpoint', () => {
 
       const threadId = await ThreadsTableTestHelper.addThread({ userId: userIdA });
 
-      const threadCommentAId = await ThreadCommentsTableTestHelper.addComment({
-        id: 'thread-comment-1',
-        userId: userIdB,
-        threadId,
-      });
       const threadCommentBId = await ThreadCommentsTableTestHelper.addComment({
         id: 'thread-comment-2',
         userId: userIdB,
         threadId,
       });
+      const threadCommentAId = await ThreadCommentsTableTestHelper.addComment({
+        id: 'thread-comment-1',
+        userId: userIdB,
+        threadId,
+      });
 
-      await ThreadCommentRepliesTableTestHelper.addReply({
-        id: 'thread-comment-reply-1',
+      const replyId1 = await ThreadCommentRepliesTableTestHelper.addReply({
+        id: 'thread-comment-reply-2',
         userId: userIdC,
         threadCommentId: threadCommentAId,
       });
-      const replyId1 = await ThreadCommentRepliesTableTestHelper.addReply({
-        id: 'thread-comment-reply-2',
+      await ThreadCommentRepliesTableTestHelper.addReply({
+        id: 'thread-comment-reply-1',
         userId: userIdC,
         threadCommentId: threadCommentAId,
       });
