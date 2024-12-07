@@ -134,7 +134,7 @@ describe('thread comments e2e', () => {
       expect(response.status).toBe(404);
       expect(Object.keys(response.body)).toHaveLength(2);
       expect(response.body.status).toBe('fail');
-      expect(response.body.message).toBe('Thread tidak ditemukan.');
+      expect(response.body.message).toBe('tidak dapat menemukan thread');
     });
 
     it('should error 404 if comment is not found', async () => {
@@ -151,7 +151,7 @@ describe('thread comments e2e', () => {
       expect(response.status).toBe(404);
       expect(Object.keys(response.body)).toHaveLength(2);
       expect(response.body.status).toBe('fail');
-      expect(response.body.message).toBe('Comment tidak ditemukan.');
+      expect(response.body.message).toBe('tidak dapat menemukan comment');
     });
 
     it('should correctly create thread commment reply and return correct response', async () => {
@@ -225,7 +225,7 @@ describe('thread comments e2e', () => {
       expect(response.status).toBe(404);
       expect(Object.keys(response.body)).toHaveLength(2);
       expect(response.body.status).toBe('fail');
-      expect(response.body.message).toBe('Thread tidak ditemukan.');
+      expect(response.body.message).toBe('tidak dapat menemukan thread');
     });
 
     it('should error if comment is not found', async () => {
@@ -242,7 +242,7 @@ describe('thread comments e2e', () => {
       expect(response.status).toBe(404);
       expect(Object.keys(response.body)).toHaveLength(2);
       expect(response.body.status).toBe('fail');
-      expect(response.body.message).toBe('Comment tidak ditemukan.');
+      expect(response.body.message).toBe('tidak dapat menemukan comment');
     });
 
     it('should error notfound if comment reply is not owned by user', async () => {
@@ -264,7 +264,7 @@ describe('thread comments e2e', () => {
       expect(response.status).toBe(403);
       expect(Object.keys(response.body)).toHaveLength(2);
       expect(response.body.status).toBe('fail');
-      expect(response.body.message).toBe('Forbidden');
+      expect(response.body.message).toBe('access data tidak diperbolehkan');
     });
 
     it('should error not found if comment reply is not exist', async () => {
@@ -281,7 +281,7 @@ describe('thread comments e2e', () => {
       expect(response.status).toBe(404);
       expect(Object.keys(response.body)).toHaveLength(2);
       expect(response.body.status).toBe('fail');
-      expect(response.body.message).toBe('Reply tidak ditemukan.');
+      expect(response.body.message).toBe('tidak dapat menemukan reply');
     });
 
     it('should correctly soft delete thread comment reply and return correct response', async () => {
