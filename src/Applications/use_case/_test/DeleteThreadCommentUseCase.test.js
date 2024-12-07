@@ -40,7 +40,7 @@ describe('DeleteThreadCommentUseCase', () =>  {
       jest.fn().mockImplementation(() => Promise.resolve());
 
     const getThreadCommentUseCase = new DeleteThreadCommentUseCase({
-      threadRepositotry: mockThreadRepository,
+      threadRepository: mockThreadRepository,
       threadCommentRepository: mockThreadCommentRepository,
     });
 
