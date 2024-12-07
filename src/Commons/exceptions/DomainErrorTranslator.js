@@ -1,3 +1,4 @@
+const ForbiddenError = require('./ForbiddenError');
 const InvariantError = require('./InvariantError');
 const NotFoundError = require('./NotFoundError');
 
@@ -25,6 +26,8 @@ DomainErrorTranslator._directories = {
   'CREATE_THREAD_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION': new InvariantError('tidak dapat membuat comment baru karena tipe data tidak sesuai'),
   'CREATE_THREAD_COMMENT_REPLY.NOT_CONTAIN_NEEDED_PROPERTY': new InvariantError('tidak dapat membuat reply baru karena properti yang dibutuhkan tidak ada'),
   'CREATE_THREAD_COMMENT_REPLY.NOT_MEET_DATA_TYPE_SPECIFICATION': new InvariantError('tidak dapat membuat reply baru karena tipe data tidak sesuai'),
+  'FIND_COMMENT.ID_COMMENT_IS_NOT_FOUND': new NotFoundError('tidak dapat menemukan comment'),
+  'DELETE_COMMENT.COMMENT_IS_NOT_OWNED_BY_USER': new ForbiddenError('access data tidak diperbolehkan'),
 };
 
 module.exports = DomainErrorTranslator;

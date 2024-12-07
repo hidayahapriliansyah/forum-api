@@ -3,20 +3,20 @@ const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 
 class DeleteThreadCommentUseCase {
   constructor({
-    threadRepositotry,
+    threadRepository,
     threadCommentRepository
   }) {
-    this._threadRepository = threadRepositotry;
+    this._threadRepository = threadRepository;
     this._threadCommentRepository = threadCommentRepository;
   }
 
   async execute(userIdPayload, threadIdPayload, useCasePayload) {
-    const thread = this._threadRepository.findThreadById(threadIdPayload);
+    const thread = await this._threadRepository.findThreadById(threadIdPayload);
     if (!thread) {
       throw new NotFoundError('FIND_THREAD.ID_THREAD_IS_NOT_FOUND');
     }
 
-    const comment = this._threadCommentRepository.findCommentById(useCasePayload);
+    const comment = await this._threadCommentRepository.findCommentById(useCasePayload);
     if (!comment) {
       throw new NotFoundError('FIND_COMMENT.ID_COMMENT_IS_NOT_FOUND');
     }

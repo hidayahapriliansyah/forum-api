@@ -13,17 +13,17 @@ class DeleteThreadCommentReplyUseCase {
   }
 
   async execute(userIdPayload, threadIdPayload, threadCommentIdPayload, useCasePayload) {
-    const thread = this._threadRepository.findThreadById(threadIdPayload);
+    const thread = await this._threadRepository.findThreadById(threadIdPayload);
     if (!thread) {
       throw new NotFoundError('FIND_THREAD.ID_THREAD_IS_NOT_FOUND');
     }
 
-    const comment = this._threadCommentRepository.findCommentById(threadCommentIdPayload);
+    const comment = await this._threadCommentRepository.findCommentById(threadCommentIdPayload);
     if (!comment) {
       throw new NotFoundError('FIND_COMMENT.ID_COMMENT_IS_NOT_FOUND');
     }
 
-    const reply = this._threadCommentReplyRepository.findReplyById(useCasePayload);
+    const reply = await this._threadCommentReplyRepository.findReplyById(useCasePayload);
     if (!reply) {
       throw new NotFoundError('FIND_REPLY.ID_COMMENT_IS_NOT_FOUND');
     }

@@ -11,7 +11,7 @@ class AddThreadCommentUseCase {
   }
 
   async execute(userIdPayload, threadIdPayload, useCasePayload) {
-    const thread = this._threadRepository.findThreadById(threadIdPayload);
+    const thread = await this._threadRepository.findThreadById(threadIdPayload);
     if (!thread) {
       throw new NotFoundError('FIND_THREAD.ID_THREAD_IS_NOT_FOUND');
     }
