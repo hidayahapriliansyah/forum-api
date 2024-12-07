@@ -121,4 +121,27 @@ describe('ThreadRepositoryPostgres', () => {
       expect(reply2.reply_username).toBe('user_c');
     });
   });
+
+  describe('findThreadById', () => {
+    beforeEach(async () => {
+      const userId = await UsersTableTestHelper.addUser({ id: 'user-123'});
+      await ThreadsTableTestHelper.addThread({ id: 'thread-123', userId });
+    });
+
+    afterEach(async () => {
+      await UsersTableTestHelper.cleanTable();
+      await ThreadsTableTestHelper.cleanTable();
+    });
+
+    it('should find thread correctly', async () => {
+      const fakeIdGenerator = () => '123aBcDef';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+
+      const nullResult = await threadRepositoryPostgres.findThreadById('not-found-thread-id');
+      expect(nullResult).toBeNull();
+
+      const notNullResult = await threadRepositoryPostgres.findThreadById('thread-123');
+      expect(notNullResult).not.toBeNull();
+    });
+  });
 });
