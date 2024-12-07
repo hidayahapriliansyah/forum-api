@@ -34,6 +34,9 @@ describe('ThreadRepositoryPostgres', () => {
         owner: 'hidayah',
         title: 'Thread title test',
       }));
+
+      const threadOnDb = await ThreadsTableTestHelper.findOne();
+      expect(threadOnDb).not.toBeNull();
     });
   });
 
