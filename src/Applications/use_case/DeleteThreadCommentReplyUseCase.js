@@ -25,7 +25,7 @@ class DeleteThreadCommentReplyUseCase {
 
     const reply = await this._threadCommentReplyRepository.findReplyById(useCasePayload);
     if (!reply) {
-      throw new NotFoundError('FIND_REPLY.ID_COMMENT_IS_NOT_FOUND');
+      throw new NotFoundError('FIND_REPLY.ID_REPLY_IS_NOT_FOUND');
     }
     if (reply.user_id !== userIdPayload) {
       throw new ForbiddenError('DELETE_REPLY.REPLY_IS_NOT_OWNED_BY_USER');

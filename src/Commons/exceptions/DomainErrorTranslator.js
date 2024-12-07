@@ -28,6 +28,8 @@ DomainErrorTranslator._directories = {
   'CREATE_THREAD_COMMENT_REPLY.NOT_MEET_DATA_TYPE_SPECIFICATION': new InvariantError('tidak dapat membuat reply baru karena tipe data tidak sesuai'),
   'FIND_COMMENT.ID_COMMENT_IS_NOT_FOUND': new NotFoundError('tidak dapat menemukan comment'),
   'DELETE_COMMENT.COMMENT_IS_NOT_OWNED_BY_USER': new ForbiddenError('access data tidak diperbolehkan'),
+  'DELETE_REPLY.REPLY_IS_NOT_OWNED_BY_USER': new ForbiddenError('access data tidak diperbolehkan'),
+  'FIND_REPLY.ID_REPLY_IS_NOT_FOUND': new NotFoundError('tidak dapat menemukan reply'),
 };
 
 module.exports = DomainErrorTranslator;

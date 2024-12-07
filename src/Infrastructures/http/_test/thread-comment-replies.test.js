@@ -166,7 +166,7 @@ describe('/threads/{threadId}/comments/{commentId}/replies endpoint', () => {
       expect(response.statusCode).toBe(404);
       expect(Object.keys(responseJson)).toHaveLength(2);
       expect(responseJson.status).toBe('fail');
-      expect(responseJson.message).toBe('Thread tidak ditemukan.');
+      expect(responseJson.message).toBe('tidak dapat menemukan thread');
     });
 
     it('should error 404 if comment is not found', async () => {
@@ -192,7 +192,7 @@ describe('/threads/{threadId}/comments/{commentId}/replies endpoint', () => {
       expect(response.statusCode).toBe(404);
       expect(Object.keys(responseJson)).toHaveLength(2);
       expect(responseJson.status).toBe('fail');
-      expect(responseJson.message).toBe('Comment tidak ditemukan.');
+      expect(responseJson.message).toBe('tidak dapat menemukan comment');
     });
 
     it('should correctly create thread commment reply and return correct response', async () => {
@@ -296,7 +296,7 @@ describe('/threads/{threadId}/comments/{commentId}/replies endpoint', () => {
       expect(response.statusCode).toBe(404);
       expect(Object.keys(responseJson)).toHaveLength(2);
       expect(responseJson.status).toBe('fail');
-      expect(responseJson.message).toBe('Thread tidak ditemukan.');
+      expect(responseJson.message).toBe('tidak dapat menemukan thread');
     });
 
     it('should error if comment is not found', async () => {
@@ -321,7 +321,7 @@ describe('/threads/{threadId}/comments/{commentId}/replies endpoint', () => {
       expect(response.statusCode).toBe(404);
       expect(Object.keys(responseJson)).toHaveLength(2);
       expect(responseJson.status).toBe('fail');
-      expect(responseJson.message).toBe('Comment tidak ditemukan.');
+      expect(responseJson.message).toBe('tidak dapat menemukan comment');
     });
 
     it('should error notfound if comment reply is not owned by user', async () => {
@@ -351,7 +351,7 @@ describe('/threads/{threadId}/comments/{commentId}/replies endpoint', () => {
       expect(response.statusCode).toBe(403);
       expect(Object.keys(responseJson)).toHaveLength(2);
       expect(responseJson.status).toBe('fail');
-      expect(responseJson.message).toBe('Forbidden');
+      expect(responseJson.message).toBe('access data tidak diperbolehkan');
     });
 
     it('should error not found if comment reply is not exist', async () => {
@@ -376,7 +376,7 @@ describe('/threads/{threadId}/comments/{commentId}/replies endpoint', () => {
       expect(response.statusCode).toBe(404);
       expect(Object.keys(responseJson)).toHaveLength(2);
       expect(responseJson.status).toBe('fail');
-      expect(responseJson.message).toBe('Reply tidak ditemukan.');
+      expect(responseJson.message).toBe('tidak dapat menemukan reply');
     });
 
     it('should correctly soft delete thread comment reply and return correct response', async () => {
