@@ -13,11 +13,6 @@ class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
   }
 
   async addComment(userId, threadId, createThreadComment) {
-    const isThreadExist = await this._threadRepositoryPostgress.checkIsThreadExistById(threadId)
-    if (!isThreadExist) {
-      throw new NotFoundError('Thread tidak ditemukan.');
-    }
-
     const { content } = createThreadComment;
     const id = `thread-comment-${this._idGenerator()}`;
 
@@ -38,14 +33,7 @@ class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
     return new CreatedThreadComment({ ...result.rows[0] });
   }
 
-  async softDeleteCommentById(userId, threadId, commentId) {
-    const isThreadExist = await this._threadRepositoryPostgress.checkIsThreadExistById(threadId)
-    if (!isThreadExist) {
-      throw new NotFoundError('Thread tidak ditemukan.');
-    }
-
-    await this.verifyCommentOwnerByUserExistenceById(commentId, userId);
-
+  async softDeleteCommentById(commentId) {
     const now = new Date();
     const query = {
       text: `
@@ -57,36 +45,6 @@ class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
     };
 
     await this._pool.query(query);
-  }
-
-  async findCommentById(commentId) {
-    const query = {
-      text: 'SELECT * FROM thread_comments WHERE id = $1',
-      values: [commentId],
-    };
-
-    const result = await this._pool.query(query);
-    return result.rows.length > 0 ? result.rows[0] : null;
-  }
-
-  async verifyCommentExistenceById(commentId) {
-    const threadComment = await this.findCommentById(commentId);
-    if (!threadComment) {
-      throw new NotFoundError('Comment tidak ditemukan.');
-    }
-    return true;
-  }
-
-  async verifyCommentOwnerByUserExistenceById(commentId, userId) {
-    const threadComment = await this.findCommentById(commentId);
-    if (!threadComment) {
-      throw new NotFoundError('Comment tidak ditemukan.');
-    }
-
-    if (threadComment.user_id !== userId) {
-      throw new ForbiddenError('Forbidden');
-    }
-    return true;
   }
 }
 
