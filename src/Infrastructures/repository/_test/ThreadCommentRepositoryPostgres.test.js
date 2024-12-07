@@ -74,4 +74,29 @@ describe('ThreadCommentRepositoryPostgres', () => {
       expect(deletedComment.is_delete).toBe(true);
     });
   });
+
+  describe('findCommentById', () => {
+    beforeEach(async () => {
+      const userId = await UsersTableTestHelper.addUser({ id: 'user-123'});
+      const threadId = await ThreadsTableTestHelper.addThread({ id: 'thread-123', userId });
+      await ThreadCommentsTableTestHelper.addComment({ id: 'comment-123', userId, threadId, });
+    });
+
+    afterEach(async () => {
+      await UsersTableTestHelper.cleanTable();
+      await ThreadsTableTestHelper.cleanTable();
+      await ThreadCommentsTableTestHelper.cleanTable();
+    });
+
+    it('should find comment correctly', async () => {
+      const fakeIdGenerator = () => '123aBcDef';
+      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
+
+      const nullResult = await threadCommentRepositoryPostgres.findCommentById('not-found-comment-id');
+      expect(nullResult).toBeNull();
+
+      const notNullResult = await threadCommentRepositoryPostgres.findCommentById('comment-123');
+      expect(notNullResult).not.toBeNull();
+    });
+  });
 });
