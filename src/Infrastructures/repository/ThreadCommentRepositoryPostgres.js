@@ -46,6 +46,15 @@ class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
 
     await this._pool.query(query);
   }
+
+  async findCommentById(commentId) {
+    const query = {
+      text: 'SELECT * FROM comments WHERE id = $1',
+      values: [commentId],
+    }
+    const queryResult = await this._pool.query(query);
+    return queryResult.rows.length > 0 ? queryResult.rows[0] : null;
+  }
 }
 
 module.exports = ThreadCommentRepositoryPostgres;
