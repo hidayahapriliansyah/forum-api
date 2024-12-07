@@ -14,15 +14,16 @@ describe('AddThreadUseCase', () => {
       content: 'test content',
     };
 
-    const mockCreatedThreadComment = new CreatedThreadComment({
+    const dummyCreatedThreadComment = new CreatedThreadComment({
       id: 'test-123',
       content: 'test content',
       owner: 'hidayah'
-    })
+    });
 
     const mockThreadCommentRepository = new ThreadCommentRepository();
 
-    mockThreadCommentRepository.addComment = jest.fn().mockImplementation(() => Promise.resolve(mockCreatedThreadComment));
+    mockThreadCommentRepository.addComment =
+      jest.fn().mockImplementation(() => Promise.resolve(dummyCreatedThreadComment));
 
     const getThreadCommentUseCase = new AddThreadCommentUseCase({
       threadCommentRepository: mockThreadCommentRepository,
@@ -31,7 +32,11 @@ describe('AddThreadUseCase', () => {
     const createdThreadComment = await getThreadCommentUseCase
       .execute(userIdPayload, threadIdPayload, useCasePayload);
 
-    expect(createdThreadComment).toStrictEqual(mockCreatedThreadComment);
+    expect(createdThreadComment).toStrictEqual(new CreatedThreadComment({
+      id: 'test-123',
+      content: 'test content',
+      owner: 'hidayah'
+    }));
     expect(mockThreadCommentRepository.addComment).toBeCalledWith(
       userIdPayload,
       threadIdPayload,
