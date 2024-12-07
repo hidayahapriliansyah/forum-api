@@ -23,17 +23,9 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
       const commentId = await ThreadCommentsTableTestHelper.addComment({ userId, threadId });
 
       const fakeIdGenerator = () => '123-aBcD';
-      const threadRepositoryPostgress = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
-      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(
-        pool,
-        fakeIdGenerator,
-        threadRepositoryPostgress
-      );
       const threadCommentReplyRepositoryPostgres = new ThreadCommentReplyRepositoryPostgres(
         pool,
-        fakeIdGenerator,
-        threadRepositoryPostgress,
-        threadCommentRepositoryPostgres
+        fakeIdGenerator
       );
 
       const createThreadCommentReply = new CreateThreadCommentReply({
@@ -58,17 +50,9 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
         .addReply({ userId, threadCommentId: commentId });
 
       const fakeIdGenerator = () => '123-aBcD';
-      const threadRepositoryPostgress = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
-      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(
-        pool,
-        fakeIdGenerator,
-        threadRepositoryPostgress
-      );
       const threadCommentReplyRepositoryPostgres = new ThreadCommentReplyRepositoryPostgres(
         pool,
-        fakeIdGenerator,
-        threadRepositoryPostgress,
-        threadCommentRepositoryPostgres
+        fakeIdGenerator
       );
 
       await threadCommentReplyRepositoryPostgres
