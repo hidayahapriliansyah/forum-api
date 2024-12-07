@@ -1,5 +1,3 @@
-const ForbiddenError = require('../../Commons/exceptions/ForbiddenError');
-const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const ThreadCommentReplyRepository = require('../../Domains/thread-comment-replies/ThreadCommentReplyRepository');
 
 class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository {
@@ -16,10 +14,7 @@ class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository 
     this._threadCommentRepositoryPostgress = threadCommentRepositoryPostgress;
   }
 
-  async addCommentReply(userId, threadId, commentId, createCommentReply) {
-    await this._threadRepositoryPostgress.verifyThreadExistenceById(threadId);
-    await this._threadCommentRepositoryPostgress.verifyCommentExistenceById(commentId);
-
+  async addCommentReply(userId, commentId, createCommentReply) {
     const id = `thread-comment-reply-${this._idGenerator()}`
     const { content } = createCommentReply;
 
@@ -39,11 +34,7 @@ class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository 
     return result.rows[0];
   }
 
-  async softDeleteCommentReplyById(userId, threadId, commentId, replyId) {
-    await this._threadRepositoryPostgress.verifyThreadExistenceById(threadId);
-    await this._threadCommentRepositoryPostgress.verifyCommentExistenceById(commentId);
-    await this.verifyReplyOwnerByUserExistenceById(replyId, userId);
-
+  async softDeleteCommentReplyById(replyId) {
     const query = {
       text: `
         UPDATE thread_comment_replies
@@ -54,28 +45,6 @@ class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository 
     };
 
     await this._pool.query(query);
-  }
-
-  async findCommentReplyById(replyId) {
-    const query = {
-      text: 'SELECT * FROM thread_comment_replies WHERE id = $1',
-      values: [replyId],
-    };
-
-    const result = await this._pool.query(query);
-    return result.rows.length > 0 ? result.rows[0] : null;
-  }
-
-  async verifyReplyOwnerByUserExistenceById(replyId, userId) {
-    const threadCommentReply = await this.findCommentReplyById(replyId);
-    if (!threadCommentReply) {
-      throw new NotFoundError('Reply tidak ditemukan.');
-    }
-
-    if (threadCommentReply.user_id !== userId) {
-      throw new ForbiddenError('Forbidden');
-    }
-    return true;
   }
 }
 
