@@ -5,11 +5,10 @@ const CreatedThreadComment = require('../../Domains/thread-comments/entities/Cre
 const ThreadCommentRepository = require('../../Domains/thread-comments/ThreadCommentRepository');
 
 class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
-  constructor(pool, idGenerator, threadRepositoryPostgress) {
+  constructor(pool, idGenerator) {
     super();
     this._pool = pool;
     this._idGenerator = idGenerator;
-    this._threadRepositoryPostgress = threadRepositoryPostgress;
   }
 
   async addComment(userId, threadId, createThreadComment) {

@@ -33,9 +33,8 @@ describe('ThreadCommentRepositoryPostgres', () => {
       });
 
       const fakeIdGenerator = () => '123-aBcD';
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
       const threadCommentRepositoryPostgres =
-        new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator, threadRepositoryPostgres);
+        new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
 
       const addedThreadComment = await threadCommentRepositoryPostgres
         .addComment(userId, threadId, createThreadComment);
@@ -62,9 +61,8 @@ describe('ThreadCommentRepositoryPostgres', () => {
       expect(threadCommentId).toBeDefined();
 
       const fakeIdGenerator = () => '123-aBcD';
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
       const threadCommentRepositoryPostgres =
-        new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator, threadRepositoryPostgres);
+        new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
 
       // action of comment soft delete repository
       await threadCommentRepositoryPostgres.softDeleteCommentById(threadCommentId);
