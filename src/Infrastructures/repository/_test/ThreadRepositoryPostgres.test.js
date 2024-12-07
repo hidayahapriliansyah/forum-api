@@ -40,19 +40,7 @@ describe('ThreadRepositoryPostgres', () => {
     });
   });
 
-  describe('findThreadById', () => {
-    // create thread first cuy
-    it('should return null if thread is not found', async () => {
-      const threadId = 'thread-nout-found';
-
-      const fakeIdGenerator = () => '123aBcDef';
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
-
-      await expect(threadRepositoryPostgres.findThreadById(threadId))
-        .rejects
-        .toThrowError('FIND_THREAD.ID_THREAD_IS_NOT_FOUND');
-    });
-
+  describe('getThreadDetailByIdWithCommentAndReply', () => {
     it('should return thread correctly', async () => {
       const userIdA = await UsersTableTestHelper.addUser({ id: 'id-user-a', username: 'user_a' });
       const userIdB = await UsersTableTestHelper.addUser({ id: 'id-user-b', username: 'user_b' });
@@ -92,26 +80,45 @@ describe('ThreadRepositoryPostgres', () => {
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
 
       // action
-      const threadDetail = await threadRepositoryPostgres.findThreadById(threadId);
+      const result = await threadRepositoryPostgres.getThreadDetailWithCommentReply(threadId);
 
-      expect(threadDetail.id).toBe(threadId);
-      expect(threadDetail.title).toBeDefined();
-      expect(threadDetail.body).toBeDefined();
-      expect(threadDetail.date).toBeDefined();
-      expect(threadDetail.username).toBeDefined();
-      expect(threadDetail.comments.length).toBe(2);
-      expect(threadDetail.comments[0].id).toBe('thread-comment-2');
-      expect(threadDetail.comments[0].username).toBeDefined();
-      expect(threadDetail.comments[0].date).toBeDefined();
-      expect(threadDetail.comments[0].content).toBeDefined();
-      expect(threadDetail.comments[0].replies.length).toBe(0);
-      expect(threadDetail.comments[0].content).toBe("**komentar telah dihapus**");
-      expect(threadDetail.comments[1].replies.length).toBe(2);
-      expect(threadDetail.comments[1].replies[0].id).toBe('thread-comment-reply-2');
-      expect(threadDetail.comments[1].replies[0].username).toBeDefined();
-      expect(threadDetail.comments[1].replies[0].date).toBeDefined();
-      expect(threadDetail.comments[1].replies[0].content).toBeDefined();
-      expect(threadDetail.comments[1].replies[0].content).toBe("**balasan telah dihapus**");
+      const threadResult = result.rows;
+
+      expect(Array.isArray(threadResult)).toBe(true);
+
+      expect(threadResult.length).toBe(3);
+
+      threadResult.forEach(row => {
+        expect(row.thread_id).toBe('thread-id-123');
+        expect(row.thread_title).toBe('Title Test');
+        expect(row.thread_body).toBe('Body test');
+        expect(row.thread_date).toBeDefined();
+        expect(row.thread_username).toBe('user_a');
+      });
+
+      const comment1 = threadResult.find(row => row.comment_id === 'thread-comment-2');
+      expect(comment1).toBeDefined();
+      expect(comment1.comment_username).toBe('user_b');
+      expect(comment1.comment_date).toBeDefined();
+      expect(comment1.comment_is_delete).toBe(true);
+      expect(comment1.comment_content).toBe('Content Test');
+      expect(comment1.reply_id).toBeNull();
+      expect(comment1.reply_content).toBeNull();
+
+      const comment2 = threadResult.filter(row => row.comment_id === 'thread-comment-1');
+      expect(comment2.length).toBe(2);
+
+      const reply1 = comment2.find(row => row.reply_id === 'thread-comment-reply-2');
+      expect(reply1).toBeDefined();
+      expect(reply1.reply_content).toBe('Reply Content Test');
+      expect(reply1.reply_is_delete).toBe(true);
+      expect(reply1.reply_username).toBe('user_c');
+
+      const reply2 = comment2.find(row => row.reply_id === 'thread-comment-reply-1');
+      expect(reply2).toBeDefined();
+      expect(reply2.reply_content).toBe('Reply Content Test');
+      expect(reply2.reply_is_delete).toBe(false);
+      expect(reply2.reply_username).toBe('user_c');
     });
   });
 });
