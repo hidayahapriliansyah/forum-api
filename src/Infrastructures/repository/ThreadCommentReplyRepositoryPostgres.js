@@ -43,7 +43,7 @@ class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository 
   async findReplyById(replyId) {
     const query = {
       text: `
-        SELET * FROM thread_comment_replies WHERE id = $1
+        SELECT * FROM thread_comment_replies WHERE id = $1
       `,
       values: [replyId],
     };
