@@ -44,6 +44,9 @@ describe('ThreadCommentRepositoryPostgres', () => {
         content: 'Comment content test',
         owner: 'hidayah'
       }));
+
+      const commentOnDb = await ThreadCommentsTableTestHelper.findCommentById('thread-comment-123-aBcD');
+      expect(commentOnDb).not.toBeNull();
     });
   });
 

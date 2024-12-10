@@ -38,6 +38,9 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
       expect(reply.id).toBe('thread-comment-reply-123-aBcD');
       expect(reply.content).toBe('Reply content test');
       expect(reply.owner).toBe('hidayah');
+
+      const replyOnDb = await ThreadCommentRepliesTableTestHelper.findOne();
+      expect(replyOnDb).not.toBeNull();
     });
   });
 
