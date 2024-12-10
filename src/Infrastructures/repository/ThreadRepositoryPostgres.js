@@ -31,42 +31,6 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     return new CreatedThread({ ...result.rows[0] });
   }
 
-  async getThreadDetailWithCommentReply(threadId) {
-    const query = {
-      text: `
-        SELECT
-          t.id AS thread_id,
-          t.title AS thread_title,
-          t.body AS thread_body,
-          t.created_at AS thread_date,
-          ut.username AS thread_username,
-          tc.id AS comment_id,
-          utc.username AS comment_username,
-          tc.created_at AS comment_date,
-          tc.is_delete AS comment_is_delete,
-          tc.content AS comment_content,
-          tcr.id AS reply_id,
-          tcr.content AS reply_content,
-          tcr.created_at AS reply_date,
-          tcr.is_delete AS reply_is_delete,
-          utcr.username AS reply_username
-        FROM threads AS t
-        JOIN users AS ut ON ut.id=t.user_id
-        LEFT JOIN thread_comments AS tc ON tc.thread_id=t.id
-        LEFT JOIN users AS utc ON utc.id=tc.user_id 
-        LEFT JOIN thread_comment_replies AS tcr ON tcr.thread_comment_id=tc.id
-        LEFT JOIN users as utcr ON utcr.id=tcr.user_id
-        WHERE t.id = $1
-        ORDER BY
-          tc.created_at ASC,
-          tcr.created_at ASC 
-      `,
-      values: [threadId]
-    };
-    const result = await this._pool.query(query);
-    return result;
-  }
-
   async findThreadById(threadId) {
     const query = {
       text: 'SELECT * FROM threads WHERE id = $1',
