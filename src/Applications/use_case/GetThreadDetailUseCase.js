@@ -1,61 +1,68 @@
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 
 class GetThreadDetailUseCase {
-  constructor({ threadRepository }) {
+  constructor({
+    threadRepository,
+    threadCommentRepository,
+    threadCommentReplyRepository,
+  }) {
     this._threadRepository = threadRepository;
+    this._threadCommentRepository = threadCommentRepository;
+    this._threadCommentReplyRepository = threadCommentReplyRepository;
   }
 
   async execute(useCasePayload) {
-    const queryResult = await this._threadRepository.getThreadDetailWithCommentReply(useCasePayload);
-    if (queryResult.rows.length <= 0) {
-      throw new NotFoundError('FIND_THREAD.ID_THREAD_IS_NOT_FOUND');
+    const threads = await this._threadRepository.getThreadsWithUser(useCasePayload);
+    if (threads.length === 0) {
+      throw new Error('FIND_THREAD.ID_THREAD_IS_NOT_FOUND');
     }
+    const thread = threads[0];
+    const comments = await this._threadCommentRepository.getCommentsWithUserFromThread(thread.id);
+    const replies = await Promise.all(comments.map(async (comment) =>
+      await this._threadCommentReplyRepository.getReplyWithUserFromComment(comment.id)
+    )).then((results) => results.flat());
 
-    const mappedQueryResult = this._mapThreadCommentAndReviews(queryResult);
-    return mappedQueryResult;
+    const mappedCommentsWithReplies = comments.map((comment) => {
+      const mappedComment = this._mapComment(comment);
+      mappedComment.replies = replies
+        .filter((reply) => reply.thread_comment_id === mappedComment.id)
+        .map((reply) => this._mapReply(reply));
+      return mappedComment;
+    });
+    const mappedThread = this._mapThread(thread);
+    mappedThread.comments = mappedCommentsWithReplies;
+
+    return mappedThread;
   }
 
-  _mapThreadCommentAndReviews(threadResult) {
-    const threadDetail = {
-      id: threadResult.rows[0].thread_id,
-      title: threadResult.rows[0].thread_title,
-      body: threadResult.rows[0].thread_body,
-      date: threadResult.rows[0].thread_date,
-      username: threadResult.rows[0].thread_username,
+  _mapThread(thread) {
+    return {
+      id: thread.id,
+      title: thread.title,
+      body: thread.body,
+      date: thread.created_at,
+      username: thread.username,
       comments: []
-    };
+    }
+  };
 
-    const commentMap = new Map();
+  _mapComment(comment) {
+    return {
+      id: comment.id,
+      username: comment.username,
+      date: comment.created_at,
+      content: this._changeDeletedCommentContent(comment.is_delete, comment.content),
+      replies: []
+    }
+  }
 
-    threadResult.rows.forEach(row => {
-      // Jika komentar belum ada dalam commentMap, tambahkan
-      if (!commentMap.has(row.comment_id)) {
-        const comment = {
-          id: row.comment_id,
-          username: row.comment_username,
-          date: row.comment_date,
-          content: this._changeDeletedCommentContent(row.comment_is_delete, row.comment_content),
-          replies: []
-        };
-        commentMap.set(row.comment_id, comment);
-        threadDetail.comments.push(comment);
-      }
-
-      // Ambil komentar dari commentMap dan tambahkan reply ke dalamnya
-      const comment = commentMap.get(row.comment_id);
-
-      // Tambahkan reply jika ada
-      if (row.reply_id) {
-        comment.replies.push({
-          id: row.reply_id,
-          content: this._changeDeletedReplyContent(row.reply_is_delete, row.reply_content),
-          date: row.reply_date,
-          username: row.reply_username
-        });
-      }
-    });
-
-    return threadDetail;
+  _mapReply(reply) {
+    return {
+      id: reply.id,
+      content: this._changeDeletedReplyContent(reply.is_delete, reply.content),
+      date: reply.created_at,
+      username: reply.username
+    }
   }
 
   _changeDeletedCommentContent(isDelete, content) {

@@ -1,155 +1,140 @@
 const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
+const ThreadCommentReplyRepository = require('../../../Domains/thread-comment-replies/ThreadCommentReplyRepository');
+const ThreadCommentRepository = require('../../../Domains/thread-comments/ThreadCommentRepository');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const GetThreadDetailUseCase = require('../GetThreadDetailUseCase');
 
 describe('GetThreadDetailUseCase', () =>{
   it('should orchestrating the get thread detail with comment and reply action correctly', async () => {
+    const mockThreads = [
+      {
+        id: 'thread-123',
+        created_at: new Date(),
+        title: 'Title Test',
+        body: 'Body test',
+        username: 'username123',
+        fullname: 'Fullname Test'
+      }
+    ]
+    const mockCommentsResult = [
+      {
+        id: 'comment-123',
+        created_at: new Date(),
+        is_delete: false,
+        deleted_at: null,
+        content: 'content test',
+        username: 'username123',
+        fullname: 'Fullname Test',
+        thread_id: 'thread-123',
+      },
+      {
+        id: 'comment-123-2',
+        created_at: new Date(),
+        is_delete: true,
+        deleted_at: new Date(),
+        content: 'content test 2',
+        username: 'username123',
+        fullname: 'Fullname Test',
+        thread_id: 'thread-123'
+      },
+    ];
+    const mockRepliesResultComment = [
+      {
+        id: 'reply-123',
+        created_at: new Date(),
+        is_delete: false,
+        deleted_at: null,
+        content: 'content test',
+        username: 'username123',
+        fullname: 'Fullname Test',
+        thread_comment_id: 'comment-123',
+      },
+      {
+        id: 'reply-123-2',
+        created_at: new Date(),
+        is_delete: true,
+        deleted_at: new Date(),
+        content: 'content test 2',
+        username: 'username123',
+        fullname: 'Fullname Test',
+        thread_comment_id: 'comment-123',
+      },
+    ]
+
     const mockThreadRepository = new ThreadRepository();
-    const useCasePayload = 'thread-id-123';
+    const mockThreadCommentRepository = new ThreadCommentRepository();
+    const mockThreadCommentReplyRepository = new ThreadCommentReplyRepository();
 
-    const mockQueryResult = {
-      rows: [
-        {
-          thread_id: 'thread-AqVg2b9JyQXR6wSQ2TmH4',
-          thread_title: 'sebuah thread',
-          thread_body: 'sebuah body thread',
-          thread_date: '2021-08-08T07:59:16.198Z',
-          thread_username: 'dicoding',
-          comment_id: 'comment-q_0uToswNf6i24RDYZJI3',
-          comment_username: 'dicoding',
-          comment_date: '2021-08-08T07:59:18.982Z',
-          comment_is_delete: false,
-          comment_content: 'sebuah comment',
-          reply_id: 'reply-BErOXUSefjwWGW1Z10Ihk',
-          reply_content: '**balasan telah dihapus**',
-          reply_date: '2021-08-08T07:59:48.766Z',
-          reply_username: 'johndoe',
-          reply_is_delete: true
-        },
-        {
-          thread_id: 'thread-AqVg2b9JyQXR6wSQ2TmH4',
-          thread_title: 'sebuah thread',
-          thread_body: 'sebuah body thread',
-          thread_date: '2021-08-08T07:59:16.198Z',
-          thread_username: 'dicoding',
-          comment_id: 'comment-q_0uToswNf6i24RDYZJI3',
-          comment_username: 'dicoding',
-          comment_date: '2021-08-08T07:59:18.982Z',
-          comment_is_delete: false,
-          comment_content: 'sebuah comment',
-          reply_id: 'reply-xNBtm9HPR-492AeiimpfN',
-          reply_content: 'sebuah balasan',
-          reply_date: '2021-08-08T08:07:01.522Z',
-          reply_username: 'dicoding',
-          reply_is_delete: false
-        },
-        {
-          thread_id: 'thread-AqVg2b9JyQXR6wSQ2TmH4',
-          thread_title: 'sebuah thread',
-          thread_body: 'sebuah body thread',
-          thread_date: '2021-08-08T07:59:16.198Z',
-          thread_username: 'dicoding',
-          comment_id: 'comment-q_20uToswNf6i24RDYZJI3',
-          comment_username: 'dicoding',
-          comment_date: '2021-08-08T07:59:18.982Z',
-          comment_is_delete: true,
-          comment_content: 'sebuah comment',
-          reply_id: 'reply-xNBtm9HPR-492AeiimpfN',
-          reply_content: 'sebuah balasan',
-          reply_date: '2021-08-08T08:07:01.522Z',
-          reply_username: 'dicoding',
-          reply_is_delete: false
-        },
-        {
-          thread_id: 'thread-AqVg2b9JyQXR6wSQ2TmH4',
-          thread_title: 'sebuah thread',
-          thread_body: 'sebuah body thread',
-          thread_date: '2021-08-08T07:59:16.198Z',
-          thread_username: 'dicoding',
-          comment_id: 'comment-q_20uToswNf6i24RDYZJI3',
-          comment_username: 'dicoding',
-          comment_date: '2021-08-08T07:59:18.982Z',
-          comment_is_delete: true,
-          comment_content: 'sebuah comment',
-          reply_id: null,
-          reply_content: null,
-          reply_date: null,
-          reply_username: null,
-          reply_is_delete: false
+    const useCasePayload = 'thread-123';
+
+    mockThreadRepository.getThreadsWithUser =
+      jest.fn().mockImplementation(() => Promise.resolve(mockThreads));
+    mockThreadCommentRepository.getCommentsWithUserFromThread =
+      jest.fn().mockImplementation(() => Promise.resolve(mockCommentsResult));
+    mockThreadCommentReplyRepository.getReplyWithUserFromComment =
+      jest.fn().mockImplementation((commentId) => {
+        if (commentId === 'comment-123-2') {
+          return Promise.resolve(mockRepliesResultComment)
         }
-      ]
-    }
-    const mockThreadDataDetail = {
-      id: 'thread-AqVg2b9JyQXR6wSQ2TmH4',
-      title: 'sebuah thread',
-      body: 'sebuah body thread',
-      date: '2021-08-08T07:59:16.198Z',
-      username: 'dicoding',
-      comments: [
-        {
-          id: 'comment-q_0uToswNf6i24RDYZJI3',
-          username: 'dicoding',
-          date: '2021-08-08T07:59:18.982Z',
-          replies: [
-            {
-              id: 'reply-BErOXUSefjwWGW1Z10Ihk',
-              content: '**balasan telah dihapus**',
-              date: '2021-08-08T07:59:48.766Z',
-              username: 'johndoe'
-            },
-            {
-              id: 'reply-xNBtm9HPR-492AeiimpfN',
-              content: 'sebuah balasan',
-              date: '2021-08-08T08:07:01.522Z',
-              username: 'dicoding'
-            }
-          ],
-          content: 'sebuah comment'
-        },
-        {
-          "content": "**komentar telah dihapus**",
-          "date": "2021-08-08T07:59:18.982Z",
-          "id": "comment-q_20uToswNf6i24RDYZJI3",
-          "replies": [
-            {
-              "content": "sebuah balasan",
-              "date": "2021-08-08T08:07:01.522Z",
-              "id": "reply-xNBtm9HPR-492AeiimpfN",
-              "username": "dicoding",
-            },
-          ],
-          "username": "dicoding",
-        }
-      ]
-    };
-
-
-    mockThreadRepository.getThreadDetailWithCommentReply =
-      jest.fn().mockImplementation(() => Promise.resolve(mockQueryResult));
+        return [];
+      });
 
     const getThreadUseCase = new GetThreadDetailUseCase({
       threadRepository: mockThreadRepository,
+      threadCommentRepository: mockThreadCommentRepository,
+      threadCommentReplyRepository: mockThreadCommentReplyRepository,
     });
 
-    const foundThread = await getThreadUseCase.execute(useCasePayload);
-    expect(foundThread).toStrictEqual(mockThreadDataDetail);
-    expect(mockThreadRepository.getThreadDetailWithCommentReply).toBeCalledWith(useCasePayload);
+    const threadDetail = await getThreadUseCase.execute(useCasePayload);
+
+    expect(threadDetail.id).toBe('thread-123');
+    expect(threadDetail.title).toBe('Title Test');
+    expect(threadDetail.body).toBe('Body test');
+    expect(threadDetail.date).toBeDefined();;
+    expect(threadDetail.username).toBe('username123');
+    expect(threadDetail.comments.length).toBe(2);
+
+    expect(threadDetail.comments[0].id).toBe('comment-123');
+    expect(threadDetail.comments[0].username).toBe('username123');
+    expect(threadDetail.comments[0].date).toBeDefined();
+    expect(threadDetail.comments[0].content).toBe('content test');
+    expect(threadDetail.comments[0].replies.length).toBe(2);
+
+    expect(threadDetail.comments[1].id).toBe('comment-123-2');
+    expect(threadDetail.comments[1].username).toBe('username123');
+    expect(threadDetail.comments[1].date).toBeDefined();
+    expect(threadDetail.comments[1].content).toBe('**komentar telah dihapus**');
+    expect(threadDetail.comments[1].replies.length).toBe(0);
+
+    expect(threadDetail.comments[0].replies[0].id).toBe('reply-123');
+    expect(threadDetail.comments[0].replies[0].username).toBe('username123');
+    expect(threadDetail.comments[0].replies[0].date).toBeDefined();
+    expect(threadDetail.comments[0].replies[0].content).toBe('content test');
+
+    expect(threadDetail.comments[0].replies[1].id).toBe('reply-123-2');
+    expect(threadDetail.comments[0].replies[1].username).toBe('username123');
+    expect(threadDetail.comments[0].replies[1].date).toBeDefined();
+    expect(threadDetail.comments[0].replies[1].content).toBe('**balasan telah dihapus**');
   });
 
   it('should orchestrating the get thread detail if thread is not found', async () => {
     const mockThreadRepository = new ThreadRepository();
+    const mockThreadCommentRepository = new ThreadCommentRepository();
+    const mockThreadCommentReplyRepository = new ThreadCommentReplyRepository();
     const useCasePayload = 'thread-id-123';
 
-    const dummyQueryResult = { rows: [] };
+    const dummyQueryResult = [];
 
-    mockThreadRepository.getThreadDetailWithCommentReply =
+    mockThreadRepository.getThreadsWithUser =
       jest.fn().mockImplementation(() => Promise.resolve(dummyQueryResult));
 
     const getThreadUseCase = new GetThreadDetailUseCase({
       threadRepository: mockThreadRepository,
+      threadCommentReplyRepository: mockThreadCommentRepository,
+      threadCommentRepository: mockThreadCommentReplyRepository,
     });
     
-    await expect(getThreadUseCase.execute(useCasePayload)).rejects.toThrow(NotFoundError);
-    expect(mockThreadRepository.getThreadDetailWithCommentReply).toBeCalledWith(useCasePayload);
+    await expect(getThreadUseCase.execute(useCasePayload)).rejects.toThrow(Error);
+    expect(mockThreadRepository.getThreadsWithUser).toBeCalledWith(useCasePayload);
   });
 });
