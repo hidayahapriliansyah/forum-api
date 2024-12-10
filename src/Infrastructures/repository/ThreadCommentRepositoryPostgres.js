@@ -54,6 +54,23 @@ class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
     const queryResult = await this._pool.query(query);
     return queryResult.rows.length > 0 ? queryResult.rows[0] : null;
   }
+
+  async getCommentsWithUserFromThread(threadId) {
+    const query = {
+      text: `
+        SELECT tc.*,  u.username AS username, u.fullname AS fullname
+        FROM
+        thread_comments tc
+        JOIN users u
+        ON tc.user_id = u.id
+        WHERE tc.thread_id = $1
+      `,
+      values: [threadId],
+    }
+
+    const result = await this._pool.query(query);
+    return result.rows;
+  }
 }
 
 module.exports = ThreadCommentRepositoryPostgres;

@@ -51,6 +51,21 @@ class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository 
     const result = await this._pool.query(query);
     return result.rows.length > 0 ? result.rows[0] : null;
   }
+
+  async getReplyWithUserFromComment(commentId) {
+    const query = {
+      text: `
+        SELECT tcr.*, u.username AS username, u.fullname AS fullname
+        FROM thread_comment_replies tcr
+        JOIN users u
+        ON u.id = tcr.user_id
+        WHERE tcr.thread_comment_id = $1
+      `,
+      values: [commentId]
+    };
+    const result = await this._pool.query(query);
+    return result.rows;
+  }
 }
 
 module.exports = ThreadCommentReplyRepositoryPostgres;

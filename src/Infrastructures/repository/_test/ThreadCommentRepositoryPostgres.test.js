@@ -99,4 +99,42 @@ describe('ThreadCommentRepositoryPostgres', () => {
       expect(notNullResult).not.toBeNull();
     });
   });
+
+  describe('getCommentsWithUserFromThread', () => { 
+    beforeEach(async () => {
+      const userId = await UsersTableTestHelper.addUser({
+        id: 'user-123',
+        username: 'username123',
+        fullname: 'Fullname Test'
+      });
+      const threadId = await ThreadsTableTestHelper.addThread({ id: 'thread-123', userId });
+      await ThreadCommentsTableTestHelper.addComment({
+        id: 'comment-123',
+        userId,
+        threadId,
+        content: 'Test content',
+      });
+    });
+
+    afterEach(async () => {
+      await UsersTableTestHelper.cleanTable();
+      await ThreadsTableTestHelper.cleanTable();
+      await ThreadCommentsTableTestHelper.cleanTable();
+    });
+
+    it('should get comment with user correctly', async () => {
+      const fakeIdGenerator = () => '123aBcDef';
+      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
+
+      const comments = await threadCommentRepositoryPostgres.getCommentsWithUserFromThread('thread-123');
+      const comment = comments[0];
+
+      expect(comments.length).toBe(1);
+      expect(comment.id).toBe('comment-123');
+      expect(comment.is_delete).toBe(false);
+      expect(comment.content).toBe('Test content');
+      expect(comment.username).toBe('username123');
+      expect(comment.fullname).toBe('Fullname Test');
+    });
+  });
 });

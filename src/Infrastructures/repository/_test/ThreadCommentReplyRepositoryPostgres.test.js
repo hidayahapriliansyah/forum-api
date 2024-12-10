@@ -92,4 +92,45 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
       expect(notNullResult).not.toBeNull();
     });
   });
+
+  describe('getReplyWithUserFromComment', () => {
+    beforeEach(async () => {
+      const userId = await UsersTableTestHelper.addUser({
+        id: 'user-123',
+        username: 'username123',
+        fullname: 'Fullname Test'
+      });
+      const threadId = await ThreadsTableTestHelper.addThread({ id: 'thread-123', userId });
+      const commentId = await ThreadCommentsTableTestHelper.addComment({ id: 'comment-123', userId, threadId, });
+      await ThreadCommentRepliesTableTestHelper.addReply({
+        id: 'reply-123',
+        threadCommentId: commentId,
+        userId,
+        content: 'Test content'
+      });
+    });
+
+    afterEach(async () => {
+      await UsersTableTestHelper.cleanTable();
+      await ThreadsTableTestHelper.cleanTable();
+      await ThreadCommentsTableTestHelper.cleanTable();
+      await ThreadCommentRepliesTableTestHelper.cleanTable();
+    });
+
+    it('should get reply with user correctly', async () => {
+      const fakeIdGenerator = () => '123aBcDef';
+      const threadCommentReplyRepositoryPostgres =
+        new ThreadCommentReplyRepositoryPostgres(pool, fakeIdGenerator);
+
+      const replies = await threadCommentReplyRepositoryPostgres.getReplyWithUserFromComment('comment-123');
+      const reply = replies[0];
+
+      expect(replies.length).toBe(1);
+      expect(reply.id).toBe('reply-123');
+      expect(reply.is_delete).toBe(false);
+      expect(reply.content).toBe('Test content');
+      expect(reply.username).toBe('username123');
+      expect(reply.fullname).toBe('Fullname Test');
+    });
+  });
 });

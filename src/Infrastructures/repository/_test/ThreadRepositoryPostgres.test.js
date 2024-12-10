@@ -144,4 +144,41 @@ describe('ThreadRepositoryPostgres', () => {
       expect(notNullResult).not.toBeNull();
     });
   });
+
+  describe('getThreadsWithUser', () => {
+    beforeEach(async () => {
+      const userId = await UsersTableTestHelper.addUser({
+        id: 'user-123',
+        username: 'username',
+        fullname: 'Fullname Test'
+      });
+      await ThreadsTableTestHelper.addThread({
+        id: 'thread-123',
+        userId,
+        body: 'Body test',
+        title: 'Title Test'
+      });
+    });
+
+    afterEach(async () => {
+      await UsersTableTestHelper.cleanTable();
+      await ThreadsTableTestHelper.cleanTable();
+    });
+
+    it('should get thread with user correctly', async () => {
+      const fakeIdGenerator = () => '123aBcDef';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+
+      const threads = await threadRepositoryPostgres.getThreadsWithUser('thread-123')
+      const thread = threads[0];
+
+      expect(threads.length).toBe(1);
+      expect(thread.id).toBe('thread-123');
+      expect(thread.title).toBe('Title Test');
+      expect(thread.body).toBe('Body test');
+      expect(thread.created_at).toBeDefined();
+      expect(thread.username).toBe('username');
+      expect(thread.fullname).toBe('Fullname Test');
+    });
+  });
 });
