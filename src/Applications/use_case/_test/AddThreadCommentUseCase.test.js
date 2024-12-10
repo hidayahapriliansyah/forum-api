@@ -1,11 +1,7 @@
-const AddThreadUseCase = require('../AddThreadUseCase');
-const CreatedThead = require('../../../Domains/threads/entities/CreatedThread');
-const CreateThread = require('../../../Domains/threads/entities/CreateThread');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const CreatedThreadComment = require('../../../Domains/thread-comments/entities/CreatedThreadComment');
 const ThreadCommentRepository = require('../../../Domains/thread-comments/ThreadCommentRepository');
 const AddThreadCommentUseCase = require('../AddThreadCommentUseCase');
-const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 
 describe('AddThreadUseCase', () => {
   it('should orchestrating the add thread comment action correctly', async () => {

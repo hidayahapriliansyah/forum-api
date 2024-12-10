@@ -1,4 +1,3 @@
-const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 const CreatedThreadCommentReply = require('../../../Domains/thread-comment-replies/entities/CreatedThreadCommentReply');
 const ThreadCommentReplyRepository = require('../../../Domains/thread-comment-replies/ThreadCommentReplyRepository');
 const ThreadCommentRepository = require('../../../Domains/thread-comments/ThreadCommentRepository');
