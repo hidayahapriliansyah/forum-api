@@ -31,7 +31,9 @@ describe('AddThreadCommentReplyUseCase', () => {
         return threadId == 'thread-123'
           ? {
             id: 'thread-123',
-            body: 'test body'
+            body: 'test body',
+            created_at: new Date(),
+            user_id: 'user-123',
           }
           : null;
       });
@@ -40,8 +42,12 @@ describe('AddThreadCommentReplyUseCase', () => {
         return commentId == 'comment-123'
           ? {
             id: 'comment-123',
-            contet: 'test body',
+            created_at: new Date(),
+            deleted_at: null,
+            is_delete: false,
             user_id: 'user-123',
+            content: 'test body',
+            thread_id: 'thread-123'
           }
           : null;
       });
