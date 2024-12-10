@@ -1,4 +1,3 @@
-const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const CreateThreadComment = require('../../Domains/thread-comments/entities/CreateThreadComment');
 
 class AddThreadCommentUseCase {
@@ -13,7 +12,7 @@ class AddThreadCommentUseCase {
   async execute(userIdPayload, threadIdPayload, useCasePayload) {
     const thread = await this._threadRepository.findThreadById(threadIdPayload);
     if (!thread) {
-      throw new NotFoundError('FIND_THREAD.ID_THREAD_IS_NOT_FOUND');
+      throw new Error('FIND_THREAD.ID_THREAD_IS_NOT_FOUND');
     }
 
     const createThreadComment = new CreateThreadComment(useCasePayload);

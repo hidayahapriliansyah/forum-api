@@ -30,7 +30,9 @@ describe('AddThreadUseCase', () => {
         return threadId == 'thread-123'
           ? {
             id: 'thread-123',
-            body: 'test body'
+            body: 'test body',
+            created_at: new Date(),
+            user_id: 'user-123',
           }
           : null;
       });
@@ -58,7 +60,7 @@ describe('AddThreadUseCase', () => {
     );
 
     await expect(getThreadCommentUseCase.execute(userIdPayload, invalidThreadId, useCasePayload))
-      .rejects.toThrow(NotFoundError);
+      .rejects.toThrow(Error);
     expect(mockThreadRepository.findThreadById).toBeCalledWith(invalidThreadId);
   });
 });
