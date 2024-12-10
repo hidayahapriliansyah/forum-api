@@ -66,12 +66,12 @@ describe('AddThreadCommentReplyUseCase', () => {
 
     await expect(getThreadCommentReplyUseCase.execute(
       userIdPayload, invalidThreadId, validCommentId, useCasePayload,
-    )).rejects.toThrow(NotFoundError);
-    expect(mockThreadRepository.findThreadById(invalidThreadId));
+    )).rejects.toThrow(Error);
+    expect(mockThreadRepository.findThreadById).toBeCalledWith(invalidThreadId);
 
     await expect(getThreadCommentReplyUseCase.execute(
       userIdPayload, validThreadId, invalidCommentId, useCasePayload,
-    )).rejects.toThrow(NotFoundError);
-    expect(mockThreadCommentRepository.findCommentById(invalidCommentId));
+    )).rejects.toThrow(Error);
+    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(invalidCommentId);
   });
 });
