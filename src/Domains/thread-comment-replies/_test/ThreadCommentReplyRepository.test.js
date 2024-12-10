@@ -10,5 +10,7 @@ describe('ThreadCommentReplyRepository', () => {
       .rejects.toThrowError('THREAD_COMMENT_REPLY_REPOSITORY.METHOD_NOT_IMPLEMENTED');
     await expect(threadCommentReplyRepository.findReplyById({}))
       .rejects.toThrowError('THREAD_COMMENT_REPLY_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+    await expect(threadCommentReplyRepository.getReplyWithUserFromComment({}))
+      .rejects.toThrowError('THREAD_COMMENT_REPLY_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   });
 });
