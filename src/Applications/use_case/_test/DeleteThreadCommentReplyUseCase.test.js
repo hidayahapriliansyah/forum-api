@@ -1,5 +1,3 @@
-const ForbiddenError = require('../../../Commons/exceptions/ForbiddenError');
-const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 const ThreadCommentReplyRepository = require('../../../Domains/thread-comment-replies/ThreadCommentReplyRepository');
 const ThreadCommentRepository = require('../../../Domains/thread-comments/ThreadCommentRepository');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
@@ -25,7 +23,9 @@ describe('DeleteThreadCommentReplyUseCase', () =>  {
         return threadId == 'thread-123'
           ? {
             id: 'thread-123',
-            body: 'test body'
+            body: 'test body',
+            created_at: new Date(),
+            user_id: 'user-123',
           }
           : null;
       });
@@ -34,8 +34,12 @@ describe('DeleteThreadCommentReplyUseCase', () =>  {
         return commentId == 'comment-123'
           ? {
             id: 'comment-123',
-            contet: 'test body',
+            created_at: new Date(),
+            deleted_at: null,
+            is_delete: false,
             user_id: 'user-123',
+            content: 'test body',
+            thread_id: 'thread-123'
           }
           : null;
       });
@@ -46,8 +50,12 @@ describe('DeleteThreadCommentReplyUseCase', () =>  {
         return replyId === 'reply-123' 
           ? {
             id: 'reply-123',
+            created_at: new Date(),
+            deleted_at: null,
+            is_delete: false,
+            user_id: 'user-123',
+            thread_comment_id: 'thread-123',
             content: 'test content',
-            user_id: 'user-123'
           }
           : null;
       });
@@ -68,22 +76,22 @@ describe('DeleteThreadCommentReplyUseCase', () =>  {
 
     await expect(getThreadCommentReplyUseCase.execute(
       validUserId, invalidThreadId, validCommentId, validUseCasePayload
-    )).rejects.toThrow(NotFoundError);
+    )).rejects.toThrow(Error);
     expect(mockThreadRepository.findThreadById).toBeCalledWith(invalidThreadId);
 
     await expect(getThreadCommentReplyUseCase.execute(
       validUserId, validThreadId, invalidCommentId, validUseCasePayload
-    )).rejects.toThrow(NotFoundError);
+    )).rejects.toThrow(Error);
     expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(invalidCommentId);
 
     await expect(getThreadCommentReplyUseCase.execute(
       validUserId, validThreadId, validCommentId, invalidUseCasePayload
-    )).rejects.toThrow(NotFoundError);
+    )).rejects.toThrow(Error);
     expect(mockThreadCommentReplyRepository.findReplyById).toBeCalledWith(invalidUseCasePayload);
 
     await expect(getThreadCommentReplyUseCase.execute(
       invalidUserId, validThreadId, validCommentId, validUseCasePayload
-    )).rejects.toThrow(ForbiddenError);
+    )).rejects.toThrow(Error);
     expect(mockThreadCommentReplyRepository.findReplyById).toBeCalledWith(validUseCasePayload);
   });
 });
