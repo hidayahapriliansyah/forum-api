@@ -72,6 +72,16 @@ class ThreadCommentRepositoryPostgres extends ThreadCommentRepository {
     const result = await this._pool.query(query);
     return result.rows;
   }
+
+  async verifyCommentExistAndOwnedByUser(userId, commentId) {
+    const comment = await this.findCommentById(commentId);
+    if (!comment) {
+      throw new NotFoundError('tidak dapat menemukan comment');
+    }
+    if (comment.user_id !== userId) {
+      throw new ForbiddenError('access data tidak diperbolehkan');
+    }
+  }
 }
 
 module.exports = ThreadCommentRepositoryPostgres;
