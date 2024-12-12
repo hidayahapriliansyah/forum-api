@@ -18,47 +18,31 @@ describe('DeleteThreadCommentReplyUseCase', () =>  {
     const mockThreadCommentRepository = new ThreadCommentRepository();
     const mockThreadCommentReplyRepository = new ThreadCommentReplyRepository();
 
-    mockThreadRepository.findThreadById = 
+    mockThreadRepository.verifyThreadExistById = 
       jest.fn().mockImplementation((threadId) => {
-        return threadId == 'thread-123'
-          ? {
-            id: 'thread-123',
-            body: 'test body',
-            title: 'test title',
-            created_at: new Date(),
-            user_id: 'user-123',
-          }
-          : null;
+        if (threadId !== 'thread-123') {
+          throw new NotFoundError('tidak dapat menemukan thread');
+        }
+        return Promise.resolve();
       });
-    mockThreadCommentRepository.findCommentById =
+    mockThreadCommentRepository.verifyCommentExist =
       jest.fn().mockImplementation((commentId) => {
-        return commentId == 'comment-123'
-          ? {
-            id: 'comment-123',
-            created_at: new Date(),
-            deleted_at: null,
-            is_delete: false,
-            user_id: 'user-123',
-            content: 'test body',
-            thread_id: 'thread-123'
-          }
-          : null;
+        if (commentId !== 'comment-123') {
+          throw new NotFoundError('tidak dapat menemukan comment');
+        }
+        return Promise.resolve();
       });
     mockThreadCommentReplyRepository.softDeleteCommentReplyById = jest.fn()
       .mockImplementation(() => Promise.resolve());
-    mockThreadCommentReplyRepository.findReplyById =
-      jest.fn().mockImplementation((replyId) => {
-        return replyId === 'reply-123' 
-          ? {
-            id: 'reply-123',
-            created_at: new Date(),
-            deleted_at: null,
-            is_delete: false,
-            user_id: 'user-123',
-            thread_comment_id: 'thread-123',
-            content: 'test content',
-          }
-          : null;
+    mockThreadCommentReplyRepository.verifyReplyExistAndOwnedByUser =
+      jest.fn().mockImplementation((userId, replyId) => {
+        if (replyId !== 'reply-123') {
+          throw new NotFoundError('tidak dapat menemukan reply');
+        }
+        if (userId !== 'user-123') {
+          throw new ForbiddenError('access data tidak diperbolehkan');
+        }
+        return Promise.resolve();
       });
 
     const getThreadCommentReplyUseCase = new DeleteThreadCommentReplyUseCase({
@@ -71,9 +55,10 @@ describe('DeleteThreadCommentReplyUseCase', () =>  {
       .execute(validUserId, validThreadId, validCommentId, validUseCasePayload);
 
     expect(deletedThreadComment).toStrictEqual(undefined);
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
-    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(validCommentId);
-    expect(mockThreadCommentReplyRepository.findReplyById).toBeCalledWith(validUseCasePayload);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.verifyCommentExist).toBeCalledWith(validCommentId);
+    expect(mockThreadCommentReplyRepository.verifyReplyExistAndOwnedByUser)
+      .toBeCalledWith(validUserId, validUseCasePayload);
     expect(mockThreadCommentReplyRepository.softDeleteCommentReplyById).toBeCalledWith(
       validUseCasePayload
     );
@@ -81,26 +66,28 @@ describe('DeleteThreadCommentReplyUseCase', () =>  {
     await expect(getThreadCommentReplyUseCase.execute(
       validUserId, invalidThreadId, validCommentId, validUseCasePayload
     )).rejects.toThrow(Error);
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(invalidThreadId);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(invalidThreadId);
 
     await expect(getThreadCommentReplyUseCase.execute(
       validUserId, validThreadId, invalidCommentId, validUseCasePayload
     )).rejects.toThrow(Error);
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
-    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(invalidCommentId);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.verifyCommentExist).toBeCalledWith(invalidCommentId);
 
     await expect(getThreadCommentReplyUseCase.execute(
       validUserId, validThreadId, validCommentId, invalidUseCasePayload
     )).rejects.toThrow(Error);
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
-    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(validCommentId);
-    expect(mockThreadCommentReplyRepository.findReplyById).toBeCalledWith(invalidUseCasePayload);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.verifyCommentExist).toBeCalledWith(validCommentId);
+    expect(mockThreadCommentReplyRepository.verifyReplyExistAndOwnedByUser)
+      .toBeCalledWith(validUserId, invalidUseCasePayload);
 
     await expect(getThreadCommentReplyUseCase.execute(
       invalidUserId, validThreadId, validCommentId, validUseCasePayload
     )).rejects.toThrow(Error);
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
-    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(validCommentId);
-    expect(mockThreadCommentReplyRepository.findReplyById).toBeCalledWith(validUseCasePayload);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.verifyCommentExist).toBeCalledWith(validCommentId);
+    expect(mockThreadCommentReplyRepository.verifyReplyExistAndOwnedByUser)
+      .toBeCalledWith(invalidUserId, validUseCasePayload);
   });
 });
