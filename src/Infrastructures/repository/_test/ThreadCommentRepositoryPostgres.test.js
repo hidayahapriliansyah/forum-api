@@ -95,11 +95,18 @@ describe('ThreadCommentRepositoryPostgres', () => {
       const fakeIdGenerator = () => '123aBcDef';
       const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
 
-      const nullResult = await threadCommentRepositoryPostgres.findCommentById('not-found-comment-id');
-      expect(nullResult).toBeNull();
+      const notExistComment = await threadCommentRepositoryPostgres.findCommentById('not-found-comment-id');
+      expect(notExistComment).toBeNull();
 
-      const notNullResult = await threadCommentRepositoryPostgres.findCommentById('comment-123');
-      expect(notNullResult).not.toBeNull();
+      const existComment = await threadCommentRepositoryPostgres.findCommentById('comment-123');
+      expect(Object.keys(existComment).length).toBe(7);
+      expect(existComment.id).toBe('comment-123');
+      expect(existComment.created_at).toBeDefined();
+      expect(existComment.is_delete).toBe(false);
+      expect(existComment.deleted_at).toBe(null);
+      expect(existComment.content).toBe('Content Test');
+      expect(existComment.user_id).toBe('user-123');
+      expect(existComment.thread_id).toBe('thread-123');
     });
   });
 

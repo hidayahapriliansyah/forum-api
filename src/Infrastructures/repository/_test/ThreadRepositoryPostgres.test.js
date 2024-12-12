@@ -55,11 +55,16 @@ describe('ThreadRepositoryPostgres', () => {
       const fakeIdGenerator = () => '123aBcDef';
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
 
-      const nullResult = await threadRepositoryPostgres.findThreadById('not-found-thread-id');
-      expect(nullResult).toBeNull();
+      const notExistThread = await threadRepositoryPostgres.findThreadById('not-found-thread-id');
+      expect(notExistThread).toBeNull();
 
-      const notNullResult = await threadRepositoryPostgres.findThreadById('thread-123');
-      expect(notNullResult).not.toBeNull();
+      const existThread = await threadRepositoryPostgres.findThreadById('thread-123');
+      expect(Object.keys(existThread).length).toBe(5);
+      expect(existThread.id).toBe('thread-123');
+      expect(existThread.created_at).toBeDefined();
+      expect(existThread.title).toBe('Title Test');
+      expect(existThread.body).toBe('Body test');
+      expect(existThread.user_id).toBe('user-123');
     });
   });
 

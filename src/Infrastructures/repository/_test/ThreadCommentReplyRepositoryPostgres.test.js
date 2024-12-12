@@ -83,16 +83,24 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
       await ThreadCommentRepliesTableTestHelper.cleanTable();
     });
 
-    it('should find comment correctly', async () => {
+    fit('should find reply correctly', async () => {
       const fakeIdGenerator = () => '123aBcDef';
       const threadCommentReplyRepositoryPostgres =
         new ThreadCommentReplyRepositoryPostgres(pool, fakeIdGenerator);
 
-      const nullResult = await threadCommentReplyRepositoryPostgres.findReplyById('not-found-reply-id');
-      expect(nullResult).toBeNull();
+      const notExistReply = await threadCommentReplyRepositoryPostgres.findReplyById('not-found-reply-id');
+      expect(notExistReply).toBeNull();
 
-      const notNullResult = await threadCommentReplyRepositoryPostgres.findReplyById('reply-123');
-      expect(notNullResult).not.toBeNull();
+      const existReply = await threadCommentReplyRepositoryPostgres.findReplyById('reply-123');
+      expect(Object.keys(existReply).length).toBe(7);
+      expect(existReply.id).toBe('reply-123');
+      expect(existReply.created_at).toBeDefined();
+      expect(existReply.is_delete).toBe(false);
+      expect(existReply.deleted_at).toBe(null);
+      expect(existReply.content).toBe('Reply Content Test');
+      expect(existReply.user_id).toBe('user-123');
+      expect(existReply.thread_comment_id).toBe('comment-123');
+      expect(existReply).not.toBeNull();
     });
   });
 
