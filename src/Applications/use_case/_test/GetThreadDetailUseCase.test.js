@@ -6,16 +6,14 @@ const GetThreadDetailUseCase = require('../GetThreadDetailUseCase');
 
 describe('GetThreadDetailUseCase', () =>{
   it('should orchestrating the get thread detail with comment and reply action correctly', async () => {
-    const mockThreads = [
-      {
-        id: 'thread-123',
-        created_at: new Date(),
-        title: 'Title Test',
-        body: 'Body test',
-        username: 'username123',
-        fullname: 'Fullname Test'
-      }
-    ]
+    const mockThread = {
+      id: 'thread-123',
+      created_at: new Date(),
+      title: 'Title Test',
+      body: 'Body test',
+      username: 'username123',
+      fullname: 'Fullname Test'
+    };
     const mockCommentsResult = [
       {
         id: 'comment-123',
@@ -68,7 +66,7 @@ describe('GetThreadDetailUseCase', () =>{
     const useCasePayload = 'thread-123';
 
     mockThreadRepository.getThreadsWithUser =
-      jest.fn().mockImplementation(() => Promise.resolve(mockThreads));
+      jest.fn().mockImplementation(() => Promise.resolve(mockThread));
     mockThreadCommentRepository.getCommentsWithUserFromThread =
       jest.fn().mockImplementation(() => Promise.resolve(mockCommentsResult));
     mockThreadCommentReplyRepository.getReplyWithUserFromComment =
