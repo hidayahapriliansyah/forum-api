@@ -135,5 +135,13 @@ describe('ThreadRepositoryPostgres', () => {
       await expect(threadRepositoryPostgres.verifyThreadExistById('random-thread-id'))
         .rejects.toThrow(NotFoundError);
     });
+
+    it('should return resolve promise if parameter is valid', async () => {
+      const fakeIdGenerator = () => '123aBcDef';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+
+      await expect(threadRepositoryPostgres.verifyThreadExistById('thread-123'))
+        .resolves.not.toThrow();
+    });
   })
 });
