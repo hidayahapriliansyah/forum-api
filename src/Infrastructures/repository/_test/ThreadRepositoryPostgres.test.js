@@ -116,4 +116,24 @@ describe('ThreadRepositoryPostgres', () => {
         .rejects.toThrow(NotFoundError);
     });
   });
+
+  describe('verifyThreadExistById', () => {
+    beforeEach(async () => {
+      const userId = await UsersTableTestHelper.addUser({ id: 'user-123'});
+      await ThreadsTableTestHelper.addThread({ id: 'thread-123', userId });
+    });
+
+    afterEach(async () => {
+      await UsersTableTestHelper.cleanTable();
+      await ThreadsTableTestHelper.cleanTable();
+    });
+
+    it('should throw not found if thread is not exist correctly', async () => {
+      const fakeIdGenerator = () => '123aBcDef';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+
+      await expect(threadRepositoryPostgres.verifyThreadExistById('random-thread-id'))
+        .rejects.toThrow(NotFoundError);
+    });
+  })
 });
