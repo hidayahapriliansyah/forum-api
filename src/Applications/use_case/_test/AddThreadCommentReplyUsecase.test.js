@@ -25,31 +25,19 @@ describe('AddThreadCommentReplyUseCase', () => {
     const mockThreadCommentRepository = new ThreadCommentRepository();
     const mockThreadCommentReplyRepository = new ThreadCommentReplyRepository();
 
-    mockThreadRepository.findThreadById = 
-      jest.fn().mockImplementation((threadId) => {
-        return threadId == 'thread-123'
-          ? {
-            id: 'thread-123',
-            title: 'test title',
-            body: 'test body',
-            created_at: new Date(),
-            user_id: 'user-123',
-          }
-          : null;
-      });
-    mockThreadCommentRepository.findCommentById =
+    mockThreadRepository.verifyThreadExistById = 
+    jest.fn().mockImplementation((threadId) => {
+      if (threadId !== 'thread-123') {
+        throw new NotFoundError('tidak dapat menemukan thread');
+      }
+      return Promise.resolve();
+    });
+    mockThreadCommentRepository.verifyCommentExist =
       jest.fn().mockImplementation((commentId) => {
-        return commentId == 'comment-123'
-          ? {
-            id: 'comment-123',
-            created_at: new Date(),
-            deleted_at: null,
-            is_delete: false,
-            user_id: 'user-123',
-            content: 'test body',
-            thread_id: 'thread-123'
-          }
-          : null;
+        if (commentId !== 'comment-123') {
+          throw new NotFoundError('tidak dapat menemukan comment');
+        }
+        return Promise.resolve();
       });
     mockThreadCommentReplyRepository.addCommentReply = jest.fn()
       .mockImplementation(() => Promise.resolve(mockCreatedThreadCommentReply));
@@ -63,8 +51,8 @@ describe('AddThreadCommentReplyUseCase', () => {
     const createdThreadCommentReply = await getThreadCommentReplyUseCase
       .execute(userIdPayload, validThreadId, validCommentId, useCasePayload);
 
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
-    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(validCommentId);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.verifyCommentExist).toBeCalledWith(validCommentId);
     expect(createdThreadCommentReply).toStrictEqual(mockCreatedThreadCommentReply);
     expect(mockThreadCommentReplyRepository.addCommentReply).toBeCalledWith(
       userIdPayload,
@@ -75,12 +63,12 @@ describe('AddThreadCommentReplyUseCase', () => {
     await expect(getThreadCommentReplyUseCase.execute(
       userIdPayload, invalidThreadId, validCommentId, useCasePayload,
     )).rejects.toThrow(Error);
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(invalidThreadId);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(invalidThreadId);
 
     await expect(getThreadCommentReplyUseCase.execute(
       userIdPayload, validThreadId, invalidCommentId, useCasePayload,
     )).rejects.toThrow(Error);
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
-    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(invalidCommentId);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.verifyCommentExist).toBeCalledWith(invalidCommentId);
   });
 });

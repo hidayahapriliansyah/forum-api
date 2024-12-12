@@ -13,11 +13,7 @@ class AddThreadCommentReplyUseCase {
 
   async execute(userIdPayload, threadIdPayload, threadCommentIdPayload, useCasePayload) {
     await this._threadRepository.verifyThreadExistById(threadIdPayload);
-
-    const comment = await this._threadCommentRepository.findCommentById(threadCommentIdPayload);
-    if (!comment) {
-      throw new Error('FIND_COMMENT.ID_COMMENT_IS_NOT_FOUND');
-    }
+    await this._threadCommentRepository.verifyCommentExist(threadCommentIdPayload);
 
     const createdThreadCommentReply = new CreateThreadCommentReply(useCasePayload);
     return await this._threadCommentReplyRepository
