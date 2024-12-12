@@ -14,6 +14,10 @@ class ThreadCommentReplyRepository {
   async getReplyWithUserFromComment(commentId) {
     throw new Error('THREAD_COMMENT_REPLY_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   }
+
+  async verifyReplyExistAndOwnedByUser(userId, replyId) {
+    throw new Error('THREAD_COMMENT_REPLY_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+  }
 }
 
 module.exports = ThreadCommentReplyRepository;

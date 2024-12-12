@@ -7,6 +7,8 @@ const ThreadCommentRepliesTableTestHelper = require('../../../../tests/ThreadCom
 const CreateThreadCommentReply = require('../../../Domains/thread-comment-replies/entities/CreateThreadCommentReply');
 const ThreadCommentsTableTestHelper = require('../../../../tests/ThreadCommentsTableTestHelper');
 const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
+const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
+const ForbiddenError = require('../../../Commons/exceptions/ForbiddenError');
 
 describe('ThreadCommentReplyRepositoryPostgress', () => {
   afterEach(async () => {
@@ -147,6 +149,52 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
           fullname: 'Fullname Test'
         })
       ]);
+    });
+  });
+
+  describe('verifyReplyExistAndOwnedByUser', () => {
+    beforeEach(async () => {
+      const userId = await UsersTableTestHelper.addUser({ id: 'user-123'});
+      const threadId = await ThreadsTableTestHelper.addThread({ id: 'thread-123', userId });
+      const commentId = await ThreadCommentsTableTestHelper.addComment({ id: 'comment-123', userId, threadId, });
+      await ThreadCommentRepliesTableTestHelper.addReply({ id: 'reply-123', threadCommentId: commentId, userId });
+    });
+
+    afterEach(async () => {
+      await UsersTableTestHelper.cleanTable();
+      await ThreadsTableTestHelper.cleanTable();
+      await ThreadCommentsTableTestHelper.cleanTable();
+      await ThreadCommentRepliesTableTestHelper.cleanTable();
+    });
+
+    it('should throw error not found if reply is not exist ', async () => {
+      const fakeIdGenerator = () => '123aBcDef';
+      const threadCommentReplyRepositoryPostgres =
+        new ThreadCommentReplyRepositoryPostgres(pool, fakeIdGenerator);
+
+      await expect(threadCommentReplyRepositoryPostgres
+        .verifyReplyExistAndOwnedByUser('user-123', 'not-found-reply-id')
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should throw error forbidden if reply is not owned by user ', async () => {
+      const fakeIdGenerator = () => '123aBcDef';
+      const threadCommentReplyRepositoryPostgres =
+        new ThreadCommentReplyRepositoryPostgres(pool, fakeIdGenerator);
+
+      await expect(threadCommentReplyRepositoryPostgres
+        .verifyReplyExistAndOwnedByUser('user-12', 'reply-123')
+      ).rejects.toThrow(ForbiddenError);
+    });
+
+    it('should return resolve promise if parameter is valid', async () => {
+      const fakeIdGenerator = () => '123aBcDef';
+      const threadCommentReplyRepositoryPostgres =
+        new ThreadCommentReplyRepositoryPostgres(pool, fakeIdGenerator);
+
+      await expect(threadCommentReplyRepositoryPostgres
+        .verifyReplyExistAndOwnedByUser('user-123', 'reply-123')
+      ).resolves.not.toThrow();
     });
   });
 });

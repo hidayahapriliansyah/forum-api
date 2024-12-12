@@ -15,7 +15,7 @@ class ThreadCommentRepository {
     throw new Error('THREAD_COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   }
   
-  async verifyCommentExistAndOwnedByUser(threadCommentId) {
+  async verifyCommentExistAndOwnedByUser(userId, threadCommentId) {
     throw new Error('THREAD_COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
   }
 

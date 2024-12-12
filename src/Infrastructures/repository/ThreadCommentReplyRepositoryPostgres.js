@@ -1,3 +1,5 @@
+const ForbiddenError = require('../../Commons/exceptions/ForbiddenError');
+const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const ThreadCommentReplyRepository = require('../../Domains/thread-comment-replies/ThreadCommentReplyRepository');
 
 class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository {
@@ -66,6 +68,16 @@ class ThreadCommentReplyRepositoryPostgres extends ThreadCommentReplyRepository 
     };
     const result = await this._pool.query(query);
     return result.rows;
+  }
+
+  async verifyReplyExistAndOwnedByUser(userId, replyId) {
+    const reply = await this.findReplyById(replyId);
+    if (!reply) {
+      throw new NotFoundError('tidak dapat menemukan reply');
+    }
+    if (reply.user_id !== userId) {
+      throw new ForbiddenError('access data tidak diperbolehkan');
+    }
   }
 }
 
