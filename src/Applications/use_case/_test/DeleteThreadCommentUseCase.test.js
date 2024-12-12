@@ -1,3 +1,5 @@
+const ForbiddenError = require('../../../Commons/exceptions/ForbiddenError');
+const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 const ThreadCommentRepository = require('../../../Domains/thread-comments/ThreadCommentRepository');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const DeleteThreadCommentUseCase = require('../DeleteThreadCommentUseCase');
@@ -15,31 +17,22 @@ describe('DeleteThreadCommentUseCase', () =>  {
     const mockThreadRepository = new ThreadRepository();
     const mockThreadCommentRepository = new ThreadCommentRepository();
 
-    mockThreadRepository.findThreadById = 
+    mockThreadRepository.verifyThreadExistById = 
       jest.fn().mockImplementation((threadId) => {
-        return threadId == 'thread-123'
-          ? {
-            id: 'thread-123',
-            body: 'test body',
-            title: 'test title',
-            created_at: new Date(),
-            user_id: 'user-123',
-          }
-          : null;
+        if (threadId !== 'thread-123') {
+          throw new NotFoundError('tidak dapat menemukan thread');
+        }
+        return Promise.resolve();
       });
-    mockThreadCommentRepository.findCommentById =
-      jest.fn().mockImplementation((commentId) => {
-        return commentId == 'comment-123'
-          ? {
-            id: 'comment-123',
-            created_at: new Date(),
-            deleted_at: null,
-            is_delete: false,
-            user_id: 'user-123',
-            content: 'test body',
-            thread_id: 'thread-123'
-          }
-          : null;
+    mockThreadCommentRepository.verifyCommentExistAndOwnedByUser =
+      jest.fn().mockImplementation((userId, commentId) => {
+        if (commentId !== 'comment-123') {
+          throw new NotFoundError('tidak dapat menemukan comment');
+        }
+        if (userId !== 'user-123') {
+          throw new ForbiddenError('access data tidak diperbolehkan');
+        }
+        return Promise.resolve();
       });
     mockThreadCommentRepository.softDeleteCommentById =
       jest.fn().mockImplementation(() => Promise.resolve());
@@ -53,22 +46,25 @@ describe('DeleteThreadCommentUseCase', () =>  {
       .execute(validUserId, validThreadId, validUseCasePayload);
 
     expect(deletedThreadComment).toStrictEqual(undefined);
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
-    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(validUseCasePayload);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.verifyCommentExistAndOwnedByUser)
+      .toBeCalledWith(validUserId, validUseCasePayload);
     expect(mockThreadCommentRepository.softDeleteCommentById).toBeCalledWith(validUseCasePayload);
 
     await expect(getThreadCommentUseCase.execute(validUserId, invalidThreadId, validUseCasePayload))
-      .rejects.toThrow(Error);
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(invalidThreadId);
+      .rejects.toThrow(NotFoundError);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(invalidThreadId);
 
     await expect(getThreadCommentUseCase.execute(validUserId, validThreadId, invalidUseCasePayload))
-      .rejects.toThrow(Error);
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
-    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(invalidUseCasePayload);
+      .rejects.toThrow(NotFoundError);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.verifyCommentExistAndOwnedByUser)
+      .toBeCalledWith(validUserId, invalidUseCasePayload);
 
     await expect(getThreadCommentUseCase.execute(invalidUserId, validThreadId, validUseCasePayload))
-      .rejects.toThrow(Error);
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
-    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(validUseCasePayload);
+      .rejects.toThrow(ForbiddenError);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.verifyCommentExistAndOwnedByUser)
+      .toBeCalledWith(invalidUserId, validUseCasePayload);
   });
 });
