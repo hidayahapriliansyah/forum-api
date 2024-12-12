@@ -1,6 +1,4 @@
 const RegisterUser = require('../../Domains/users/entities/RegisterUser');
-const UserRepository = require('../../Domains/users/UserRepository');
-const UserRepositoryPostgres = require('../../Infrastructures/repository/UserRepositoryPostgres');
 
 class AddUserUseCase {
   constructor({ userRepository, passwordHash }) {

@@ -1,5 +1,3 @@
-const NotFoundError = require('../../Commons/exceptions/NotFoundError');
-
 class GetThreadDetailUseCase {
   constructor({
     threadRepository,
