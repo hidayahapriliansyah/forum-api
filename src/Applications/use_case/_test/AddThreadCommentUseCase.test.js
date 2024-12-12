@@ -2,6 +2,7 @@ const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const CreatedThreadComment = require('../../../Domains/thread-comments/entities/CreatedThreadComment');
 const ThreadCommentRepository = require('../../../Domains/thread-comments/ThreadCommentRepository');
 const AddThreadCommentUseCase = require('../AddThreadCommentUseCase');
+const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 
 describe('AddThreadUseCase', () => {
   it('should orchestrating the add thread comment action correctly', async () => {
@@ -21,17 +22,12 @@ describe('AddThreadUseCase', () => {
     const mockThreadRepository = new ThreadRepository();
     const mockThreadCommentRepository = new ThreadCommentRepository();
 
-    mockThreadRepository.findThreadById = 
+    mockThreadRepository.verifyThreadExistById = 
       jest.fn().mockImplementation((threadId) => {
-        return threadId == 'thread-123'
-          ? {
-            id: 'thread-123',
-            title: 'test title',
-            body: 'test body',
-            created_at: new Date(),
-            user_id: 'user-123',
-          }
-          : null;
+        if (threadId !== 'thread-123') {
+          throw new NotFoundError('tidak dapat menemukan thread');
+        }
+        return Promise.resolve();
       });
     mockThreadCommentRepository.addComment =
       jest.fn().mockImplementation(() => Promise.resolve(dummyCreatedThreadComment));
@@ -49,7 +45,7 @@ describe('AddThreadUseCase', () => {
       content: 'test content',
       owner: 'hidayah'
     }));
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(validThreadId);
     expect(mockThreadCommentRepository.addComment).toBeCalledWith(
       userIdPayload,
       validThreadId,
@@ -57,7 +53,7 @@ describe('AddThreadUseCase', () => {
     );
 
     await expect(getThreadCommentUseCase.execute(userIdPayload, invalidThreadId, useCasePayload))
-      .rejects.toThrow(Error);
-    expect(mockThreadRepository.findThreadById).toBeCalledWith(invalidThreadId);
+      .rejects.toThrow(NotFoundError);
+    expect(mockThreadRepository.verifyThreadExistById).toBeCalledWith(invalidThreadId);
   });
 });
