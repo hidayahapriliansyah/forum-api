@@ -83,7 +83,7 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
       await ThreadCommentRepliesTableTestHelper.cleanTable();
     });
 
-    fit('should find reply correctly', async () => {
+    it('should find reply correctly', async () => {
       const fakeIdGenerator = () => '123aBcDef';
       const threadCommentReplyRepositoryPostgres =
         new ThreadCommentReplyRepositoryPostgres(pool, fakeIdGenerator);
@@ -134,14 +134,19 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
         new ThreadCommentReplyRepositoryPostgres(pool, fakeIdGenerator);
 
       const replies = await threadCommentReplyRepositoryPostgres.getReplyWithUserFromComment('comment-123');
-      const reply = replies[0];
-
-      expect(replies.length).toBe(1);
-      expect(reply.id).toBe('reply-123');
-      expect(reply.is_delete).toBe(false);
-      expect(reply.content).toBe('Test content');
-      expect(reply.username).toBe('username123');
-      expect(reply.fullname).toBe('Fullname Test');
+      expect(replies).toStrictEqual([
+        expect.objectContaining({
+          id: 'reply-123',
+          created_at: expect.any(Date),
+          is_delete: false,
+          deleted_at: null,
+          content: 'Test content',
+          user_id: 'user-123',
+          thread_comment_id: 'comment-123',
+          username: 'username123',
+          fullname: 'Fullname Test'
+        })
+      ]);
     });
   });
 });

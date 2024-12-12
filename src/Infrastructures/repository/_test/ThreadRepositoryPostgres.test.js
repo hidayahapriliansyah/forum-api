@@ -93,15 +93,17 @@ describe('ThreadRepositoryPostgres', () => {
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
 
       const threads = await threadRepositoryPostgres.getThreadsWithUser('thread-123')
-      const thread = threads[0];
-
-      expect(threads.length).toBe(1);
-      expect(thread.id).toBe('thread-123');
-      expect(thread.title).toBe('Title Test');
-      expect(thread.body).toBe('Body test');
-      expect(thread.created_at).toBeDefined();
-      expect(thread.username).toBe('username');
-      expect(thread.fullname).toBe('Fullname Test');
+      expect(threads).toStrictEqual([
+        expect.objectContaining({
+          id: 'thread-123',
+          created_at: expect.any(Date),
+          title: 'Title Test',
+          body: 'Body test',
+          user_id: 'user-123',
+          username: 'username',
+          fullname: 'Fullname Test'
+        })
+      ])
     });
   });
 });

@@ -137,14 +137,22 @@ describe('ThreadCommentRepositoryPostgres', () => {
       const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
 
       const comments = await threadCommentRepositoryPostgres.getCommentsWithUserFromThread('thread-123');
+
       const comment = comments[0];
 
-      expect(comments.length).toBe(1);
-      expect(comment.id).toBe('comment-123');
-      expect(comment.is_delete).toBe(false);
-      expect(comment.content).toBe('Test content');
-      expect(comment.username).toBe('username123');
-      expect(comment.fullname).toBe('Fullname Test');
+      expect(comments).toStrictEqual([
+        expect.objectContaining({
+          id: 'comment-123',
+          created_at: expect.any(Date),
+          is_delete: false,
+          deleted_at: null,
+          content: 'Test content',
+          user_id: 'user-123',
+          thread_id: 'thread-123',
+          username: 'username123',
+          fullname: 'Fullname Test'
+        }),
+      ]);
     });
   });
 });
