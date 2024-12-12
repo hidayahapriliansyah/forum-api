@@ -6,6 +6,7 @@ const CreateThread = require('../../../Domains/threads/entities/CreateThread');
 const CreatedThread = require('../../../Domains/threads/entities/CreatedThread');
 const ThreadCommentsTableTestHelper = require('../../../../tests/ThreadCommentsTableTestHelper');
 const ThreadCommentRepliesTableTestHelper = require('../../../../tests/ThreadCommentRepliesTestHelper');
+const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 
 describe('ThreadRepositoryPostgres', () => {
   afterEach(async () => {
@@ -92,8 +93,9 @@ describe('ThreadRepositoryPostgres', () => {
       const fakeIdGenerator = () => '123aBcDef';
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
 
-      const threads = await threadRepositoryPostgres.getThreadsWithUser('thread-123')
-      expect(threads).toStrictEqual([
+      const thread = await threadRepositoryPostgres.getThreadsWithUser('thread-123')
+
+      expect(thread).toStrictEqual(
         expect.objectContaining({
           id: 'thread-123',
           created_at: expect.any(Date),
@@ -103,7 +105,15 @@ describe('ThreadRepositoryPostgres', () => {
           username: 'username',
           fullname: 'Fullname Test'
         })
-      ])
+      )
+    });
+
+    it('shoudl throw not found error if thread is not exist', async () => {
+      const fakeIdGenerator = () => '123aBcDef';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
+
+      await expect(threadRepositoryPostgres.getThreadsWithUser('random-thread-id'))
+        .rejects.toThrow(NotFoundError);
     });
   });
 });

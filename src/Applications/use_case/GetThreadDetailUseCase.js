@@ -10,11 +10,7 @@ class GetThreadDetailUseCase {
   }
 
   async execute(useCasePayload) {
-    const threads = await this._threadRepository.getThreadsWithUser(useCasePayload);
-    if (threads.length === 0) {
-      throw new Error('FIND_THREAD.ID_THREAD_IS_NOT_FOUND');
-    }
-    const thread = threads[0];
+    const thread = await this._threadRepository.getThreadsWithUser(useCasePayload);
     const comments = await this._threadCommentRepository.getCommentsWithUserFromThread(thread.id);
     const replies = await Promise.all(comments.map(async (comment) =>
       await this._threadCommentReplyRepository.getReplyWithUserFromComment(comment.id)
