@@ -26,6 +26,7 @@ describe('AddThreadUseCase', () => {
         return threadId == 'thread-123'
           ? {
             id: 'thread-123',
+            title: 'test title',
             body: 'test body',
             created_at: new Date(),
             user_id: 'user-123',

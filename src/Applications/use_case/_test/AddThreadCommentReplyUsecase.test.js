@@ -30,6 +30,7 @@ describe('AddThreadCommentReplyUseCase', () => {
         return threadId == 'thread-123'
           ? {
             id: 'thread-123',
+            title: 'test title',
             body: 'test body',
             created_at: new Date(),
             user_id: 'user-123',
@@ -62,6 +63,8 @@ describe('AddThreadCommentReplyUseCase', () => {
     const createdThreadCommentReply = await getThreadCommentReplyUseCase
       .execute(userIdPayload, validThreadId, validCommentId, useCasePayload);
 
+    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(validCommentId);
     expect(createdThreadCommentReply).toStrictEqual(mockCreatedThreadCommentReply);
     expect(mockThreadCommentReplyRepository.addCommentReply).toBeCalledWith(
       userIdPayload,
@@ -77,6 +80,7 @@ describe('AddThreadCommentReplyUseCase', () => {
     await expect(getThreadCommentReplyUseCase.execute(
       userIdPayload, validThreadId, invalidCommentId, useCasePayload,
     )).rejects.toThrow(Error);
+    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
     expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(invalidCommentId);
   });
 });

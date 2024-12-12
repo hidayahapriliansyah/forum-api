@@ -24,6 +24,7 @@ describe('DeleteThreadCommentReplyUseCase', () =>  {
           ? {
             id: 'thread-123',
             body: 'test body',
+            title: 'test title',
             created_at: new Date(),
             user_id: 'user-123',
           }
@@ -70,6 +71,9 @@ describe('DeleteThreadCommentReplyUseCase', () =>  {
       .execute(validUserId, validThreadId, validCommentId, validUseCasePayload);
 
     expect(deletedThreadComment).toStrictEqual(undefined);
+    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(validCommentId);
+    expect(mockThreadCommentReplyRepository.findReplyById).toBeCalledWith(validUseCasePayload);
     expect(mockThreadCommentReplyRepository.softDeleteCommentReplyById).toBeCalledWith(
       validUseCasePayload
     );
@@ -82,16 +86,21 @@ describe('DeleteThreadCommentReplyUseCase', () =>  {
     await expect(getThreadCommentReplyUseCase.execute(
       validUserId, validThreadId, invalidCommentId, validUseCasePayload
     )).rejects.toThrow(Error);
+    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
     expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(invalidCommentId);
 
     await expect(getThreadCommentReplyUseCase.execute(
       validUserId, validThreadId, validCommentId, invalidUseCasePayload
     )).rejects.toThrow(Error);
+    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(validCommentId);
     expect(mockThreadCommentReplyRepository.findReplyById).toBeCalledWith(invalidUseCasePayload);
 
     await expect(getThreadCommentReplyUseCase.execute(
       invalidUserId, validThreadId, validCommentId, validUseCasePayload
     )).rejects.toThrow(Error);
+    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(validCommentId);
     expect(mockThreadCommentReplyRepository.findReplyById).toBeCalledWith(validUseCasePayload);
   });
 });

@@ -21,6 +21,7 @@ describe('DeleteThreadCommentUseCase', () =>  {
           ? {
             id: 'thread-123',
             body: 'test body',
+            title: 'test title',
             created_at: new Date(),
             user_id: 'user-123',
           }
@@ -52,18 +53,22 @@ describe('DeleteThreadCommentUseCase', () =>  {
       .execute(validUserId, validThreadId, validUseCasePayload);
 
     expect(deletedThreadComment).toStrictEqual(undefined);
+    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(validUseCasePayload);
     expect(mockThreadCommentRepository.softDeleteCommentById).toBeCalledWith(validUseCasePayload);
 
     await expect(getThreadCommentUseCase.execute(validUserId, invalidThreadId, validUseCasePayload))
       .rejects.toThrow(Error);
     expect(mockThreadRepository.findThreadById).toBeCalledWith(invalidThreadId);
 
-    await expect(getThreadCommentUseCase.execute(validUserId, validThreadId, invalidThreadId))
+    await expect(getThreadCommentUseCase.execute(validUserId, validThreadId, invalidUseCasePayload))
       .rejects.toThrow(Error);
-    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(invalidThreadId);
+    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
+    expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(invalidUseCasePayload);
 
     await expect(getThreadCommentUseCase.execute(invalidUserId, validThreadId, validUseCasePayload))
       .rejects.toThrow(Error);
+    expect(mockThreadRepository.findThreadById).toBeCalledWith(validThreadId);
     expect(mockThreadCommentRepository.findCommentById).toBeCalledWith(validUseCasePayload);
   });
 });
