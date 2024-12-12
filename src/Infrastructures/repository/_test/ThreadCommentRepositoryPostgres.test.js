@@ -195,5 +195,35 @@ describe('ThreadCommentRepositoryPostgres', () => {
       await expect(threadCommentRepositoryPostgres.verifyCommentExistAndOwnedByUser('user-123', 'comment-123'))
         .resolves.not.toThrow();
     })
-  })
+  });
+
+  describe('verifyCommentExist', () => {
+    beforeEach(async () => {
+      const userId = await UsersTableTestHelper.addUser({ id: 'user-123'});
+      const threadId = await ThreadsTableTestHelper.addThread({ id: 'thread-123', userId });
+      await ThreadCommentsTableTestHelper.addComment({ id: 'comment-123', userId, threadId, });
+    });
+
+    afterEach(async () => {
+      await UsersTableTestHelper.cleanTable();
+      await ThreadsTableTestHelper.cleanTable();
+      await ThreadCommentsTableTestHelper.cleanTable();
+    });
+
+    it('should throw not found error if comment is not exist comment correctly', async () => {
+      const fakeIdGenerator = () => '123aBcDef';
+      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
+
+      await expect(threadCommentRepositoryPostgres.verifyCommentExist('not-found-comment-id'))
+        .rejects.toThrow(NotFoundError);
+    });
+
+    it('should return promise resolve if comment exist', async () => {
+      const fakeIdGenerator = () => '123aBcDef';
+      const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
+
+      await expect(threadCommentRepositoryPostgres.verifyCommentExist('comment-123'))
+        .resolves.not.toThrow();
+    })
+  });
 });
