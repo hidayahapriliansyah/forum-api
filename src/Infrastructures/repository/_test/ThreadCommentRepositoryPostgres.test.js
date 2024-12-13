@@ -192,8 +192,12 @@ describe('ThreadCommentRepositoryPostgres', () => {
       const fakeIdGenerator = () => '123aBcDef';
       const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
 
-      await expect(threadCommentRepositoryPostgres.verifyCommentExistAndOwnedByUser('user-123', 'comment-123'))
-        .resolves.not.toThrow();
+      await expect(threadCommentRepositoryPostgres
+        .verifyCommentExistAndOwnedByUser('user-123', 'comment-123'))
+      .resolves.not.toThrow(NotFoundError);
+      await expect(threadCommentRepositoryPostgres
+        .verifyCommentExistAndOwnedByUser('user-123', 'comment-123'))
+      .resolves.not.toThrow(ForbiddenError);
     })
   });
 
@@ -223,7 +227,7 @@ describe('ThreadCommentRepositoryPostgres', () => {
       const threadCommentRepositoryPostgres = new ThreadCommentRepositoryPostgres(pool, fakeIdGenerator);
 
       await expect(threadCommentRepositoryPostgres.verifyCommentExist('comment-123'))
-        .resolves.not.toThrow();
+        .resolves.not.toThrow(NotFoundError);
     })
   });
 });

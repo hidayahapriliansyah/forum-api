@@ -194,7 +194,10 @@ describe('ThreadCommentReplyRepositoryPostgress', () => {
 
       await expect(threadCommentReplyRepositoryPostgres
         .verifyReplyExistAndOwnedByUser('user-123', 'reply-123')
-      ).resolves.not.toThrow();
+      ).resolves.not.toThrow(NotFoundError);
+      await expect(threadCommentReplyRepositoryPostgres
+        .verifyReplyExistAndOwnedByUser('user-123', 'reply-123')
+      ).resolves.not.toThrow(ForbiddenError);
     });
   });
 });
