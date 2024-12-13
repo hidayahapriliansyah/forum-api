@@ -12,7 +12,8 @@ describe('GetThreadDetailUseCase', () =>{
       title: 'Title Test',
       body: 'Body test',
       username: 'username123',
-      fullname: 'Fullname Test'
+      fullname: 'Fullname Test',
+      user_id: 'user-123'
     };
     const mockCommentsResult = [
       {
