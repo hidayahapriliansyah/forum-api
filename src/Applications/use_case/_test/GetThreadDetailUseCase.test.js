@@ -25,6 +25,7 @@ describe('GetThreadDetailUseCase', () =>{
         username: 'username123',
         fullname: 'Fullname Test',
         thread_id: 'thread-123',
+        user_id: 'user-123'
       },
       {
         id: 'comment-123-2',
@@ -34,7 +35,8 @@ describe('GetThreadDetailUseCase', () =>{
         content: 'content test 2',
         username: 'username123',
         fullname: 'Fullname Test',
-        thread_id: 'thread-123'
+        thread_id: 'thread-123',
+        user_id: 'user-123'
       },
     ];
     const mockRepliesResultComment = [
@@ -47,6 +49,7 @@ describe('GetThreadDetailUseCase', () =>{
         username: 'username123',
         fullname: 'Fullname Test',
         thread_comment_id: 'comment-123',
+        user_id: 'user-123'
       },
       {
         id: 'reply-123-2',
@@ -57,6 +60,7 @@ describe('GetThreadDetailUseCase', () =>{
         username: 'username123',
         fullname: 'Fullname Test',
         thread_comment_id: 'comment-123',
+        user_id: 'user-123'
       },
     ]
 
