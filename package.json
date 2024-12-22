@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/app.js",
-    "start:dev": "nodemon src/app.js",
+    "start": "NODE_ENV=production src/app.js",
+    "start:dev": "NODE_ENV=development nodemon src/app.js",
     "test": "jest --config config/jest.unit.js  --setupFiles dotenv/config -i --runInBand",
     "test:watch:change": "jest --config config/jest.unit.js  --watch --setupFiles dotenv/config -i --runInBand",
     "test:watch": "jest --watchAll --config config/jest.unit.js  --coverage --setupFiles dotenv/config -i --runInBand",
