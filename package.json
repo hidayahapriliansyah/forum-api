@@ -11,7 +11,8 @@
     "test:watch": "jest --watchAll --config config/jest.unit.js  --coverage --setupFiles dotenv/config -i --runInBand",
     "test:e2e": "jest --runInBand --config config/jest.e2e.js --setupFiles dotenv/config -i",
     "migrate": "node-pg-migrate",
-    "migrate:test": "node-pg-migrate -f config/database/test.json"
+    "migrate:test": "node-pg-migrate -f config/database/test.json",
+    "migrate:test:dev": "node-pg-migrate --envPath .test.env"
   },
   "keywords": [],
   "author": "",
